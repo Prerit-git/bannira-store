@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Libre_Baskerville, Poppins } from "next/font/google";
 import Navbar from "@/components/Navbar";
+import ClientWrapper from "./ClientWrapper";
 
 const libre = Libre_Baskerville({
   subsets: ["latin"],
@@ -29,8 +30,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${libre.variable} ${poppins.variable} antialiased`}>
+        <ClientWrapper>
         <Navbar/>
         {children}
+        </ClientWrapper>
       </body>
     </html>
   );

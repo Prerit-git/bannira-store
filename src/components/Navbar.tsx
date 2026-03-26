@@ -19,58 +19,54 @@ export default function Navbar() {
   return (
     <header
       className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 ${
-        scrolled ? "bg-white shadow-md py-3" : "bg-transparent py-5"
+        scrolled
+          ? "bg-black/30 backdrop-blur-md shadow-sm py-2"
+          : "bg-transparent py-5"
       }`}
     >
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
+        
         {/* Logo */}
-        <Image
-          src={"/bannira_web_logo.png"}
-          alt="png"
-          width={180}
-          height={80}
-          loading="eager"
-          className="object-cover w-auto h-auto"
-        />
-
-        {/* Nav Links */}
-        {/* <nav className="hidden md:flex items-center gap-8">
-          {["Home", "Collections", "New Arrivals", "About"].map((item) => (
-            <a
-              key={item}
-              href="#"
-              className={`text-sm tracking-wide transition ${
-                scrolled
-                  ? "text-dark hover:text-primary"
-                  : "text-white hover:text-gold"
-              }`}
-            >
-              {item}
-            </a>
-          ))}
-        </nav> */}
+        <div
+          className={`transition-all duration-500 ${
+            scrolled ? "scale-75" : "scale-100"
+          }`}
+        >
+          <Image
+            src={"/bannira_web_logo.png"}
+            alt="logo"
+            width={180}
+            height={80}
+            priority
+            className="object-contain w-auto h-auto scale-80 md:scale-100"
+          />
+        </div>
 
         {/* Icons */}
         <div className="flex items-center gap-4">
-          <button className="flex items-center gap-1 bg-[#F8F3EF] p-1 cursor-pointer rounded-full">
+          <button className="flex items-center gap-1 bg-[#F8F3EF] p-1 rounded-full">
             <ShoppingBag
               size={25}
-              className={`cursor-pointer ${
-                scrolled ? "text-dark" : "text-[#7B2D0A]"
+              className={`transition-colors ${
+                scrolled ? "text-black" : "text-[#7B2D0A]"
               }`}
             />
           </button>
-          <button className="flex items-center gap-1 bg-[#F8F3EF] p-1 cursor-pointer rounded-full">
+
+          <button className="flex items-center gap-1 bg-[#F8F3EF] p-1 rounded-full">
             <UserIcon
               size={25}
-              className={`cursor-pointer ${
-                scrolled ? "text-dark" : "text-[#7B2D0A]"
+              className={`transition-colors ${
+                scrolled ? "text-black" : "text-[#7B2D0A]"
               }`}
             />
           </button>
+
           <List
             size={24}
-            className={`md:hidden ${scrolled ? "text-dark" : "text-white"}`}
+            className={`md:hidden transition-colors ${
+              scrolled ? "text-black" : "text-white"
+            }`}
           />
         </div>
       </div>
