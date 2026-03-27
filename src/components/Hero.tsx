@@ -21,25 +21,36 @@ type Slide = {
 /* ================= DATA ================= */
 const slides: Slide[] = [
   {
-    desktopImage: "/assets/hero-slide-1.jpg",
-    mobileImage: "/assets/hero-slide-1.jpg",
-    subtitle: "Bridal Collection 2026",
-    title: "Royal Lehengas",
+    desktopImage: "/assets/hero-slide-3.jpg",
+    mobileImage: "/assets/hero-slide-3.jpg",
+    subtitle: "New Arrivals",
+    title: "Designer Kurti Sets",
     description:
-      "Handcrafted with centuries-old Zardozi techniques by master artisans.",
-    discount: "FLAT 40% OFF",
-    cta: "Shop Bridal",
+      "Mirror work & embroidered kurti sets with palazzos — effortless fusion dressing for every occasion.",
+    discount: "STARTING ₹1,499",
+    cta: "Shop Now",
     overlay: true,
+  },
+  {
+    desktopImage: "/assets/hero-slide-1.webp",
+    mobileImage: "https://www.biba.in/dw/image/v2/BKQK_PRD/on/demandware.static/-/Library-Sites-BibaSharedLibrary/en_IN/dw79d1f9b7/A-A-SS26/SS26-Edit-M.jpg",
+    // subtitle: "Premium Cotton Collection",
+    // title: "Cotton Kurtis",
+    // description:
+    //   "Handcrafted with traditional Rajasthani block prints by master artisans of Jaipur. Comfort meets heritage.",
+    // discount: "FLAT 40% OFF",
+    // cta: "Shop Kurtis",
+    overlay: false,
   },
   {
     desktopImage: "/assets/hero-slide-2.jpg",
     mobileImage: "/assets/hero-slide-2.jpg",
-    subtitle: "Heritage Weaves",
-    title: "Bandhani Sarees",
+    subtitle: "Flowing Eleganc",
+    title: "Maxi Dresses",
     description:
-      "Thousands of hand-tied knots create the legendary Bandhani patterns of Rajasthan.",
+      "Vibrant Bandhani and paisley prints on flowing silhouettes — where Rajasthani heritage meets modern grace.",
     discount: "UP TO 35% OFF",
-    cta: "Explore Sarees",
+    cta: "Explore Maxis",
     overlay: true,
   },
   {
