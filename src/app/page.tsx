@@ -2,7 +2,9 @@
 
 import Categories from "@/components/Categories";
 import HeroSection from "@/components/Hero";
+import PageBreakerSlider from "@/components/PageBreakerSlider";
 import ProductsSection from "@/components/ProductsSection";
+import ShowcaseSection from "@/components/ShowcaseSection";
 
 export default function Home() {
   return (
@@ -10,6 +12,8 @@ export default function Home() {
     <HeroSection/>
     <Categories/>
     <ProductsSection/>
+    <PageBreakerSlider/>
+    <ShowcaseSection/>
     </>
   );
 }

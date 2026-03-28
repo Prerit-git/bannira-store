@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Libre_Baskerville, Poppins } from "next/font/google";
-import Navbar from "@/components/Navbar";
 import ClientWrapper from "./ClientWrapper";
+import Footer from "@/components/Footer";
+import Navbar from "@/components/Navbar";
 
 const libre = Libre_Baskerville({
   subsets: ["latin"],
@@ -33,6 +34,7 @@ export default function RootLayout({
         <ClientWrapper>
         <Navbar/>
         {children}
+        <Footer/>
         </ClientWrapper>
       </body>
     </html>

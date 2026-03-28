@@ -173,7 +173,7 @@ ${index === currentIndex ? "opacity-100" : "opacity-0"}
       : "bg-[#7B2D0A] text-[#F3E1B6] hover:bg-[#D4AF37] hover:text-[#7B2D0A]"
   }`}
         >
-          {isOutOfStock ? "Sold Out" : "Add to Bag"}
+          {isOutOfStock ? "Sold Out" : "Shop Now"}
         </button>
       </div>
     </div>

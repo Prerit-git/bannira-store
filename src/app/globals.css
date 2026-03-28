@@ -9,7 +9,22 @@ h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-libre), sans-serif;
 }
 
-/* Body text
-body, p, a, span, button {
-  font-family: var(--font-body);
-} */
+.swiper-button-next,
+.swiper-button-prev {
+  width: 40px !important;
+  height: 40px !important;
+  background-color: #F3E1B6;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  color: #7B2D0A !important;
+}
+
+@media(max-width: 640px){
+  .swiper-button-next,
+.swiper-button-prev{
+  display: none !important;
+}
+}
