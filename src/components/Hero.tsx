@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useRouter } from "next/navigation";
 
 /* ================= TYPES ================= */
 type Slide = {
@@ -16,6 +17,7 @@ type Slide = {
   cta?: string;
   showContent?: boolean;
   overlay?: boolean;
+  link: string; // Added link property to the type
 };
 
 /* ================= DATA ================= */
@@ -25,57 +27,49 @@ const slides: Slide[] = [
     mobileImage: "/assets/hero-slide-3.jpg",
     subtitle: "New Arrivals",
     title: "Designer Kurti Sets",
-    description:
-      "Mirror work & embroidered kurti sets with palazzos — effortless fusion dressing for every occasion.",
+    description: "Mirror work & embroidered kurti sets with palazzos — effortless fusion dressing for every occasion.",
     discount: "STARTING ₹1,499",
     cta: "Shop Now",
     overlay: true,
+    link: "/products",
   },
   {
     desktopImage: "/assets/hero-slide-1.webp",
     mobileImage: "https://www.biba.in/dw/image/v2/BKQK_PRD/on/demandware.static/-/Library-Sites-BibaSharedLibrary/en_IN/dw79d1f9b7/A-A-SS26/SS26-Edit-M.jpg",
-    // subtitle: "Premium Cotton Collection",
-    // title: "Cotton Kurtis",
-    // description:
-    //   "Handcrafted with traditional Rajasthani block prints by master artisans of Jaipur. Comfort meets heritage.",
-    // discount: "FLAT 40% OFF",
-    // cta: "Shop Kurtis",
     overlay: false,
+    link: "/products",
   },
   {
     desktopImage: "/assets/hero-slide-2.jpg",
     mobileImage: "/assets/hero-slide-2.jpg",
-    subtitle: "Flowing Eleganc",
+    subtitle: "Flowing Elegance",
     title: "Maxi Dresses",
-    description:
-      "Vibrant Bandhani and paisley prints on flowing silhouettes — where Rajasthani heritage meets modern grace.",
+    description: "Vibrant Bandhani and paisley prints on flowing silhouettes — where Rajasthani heritage meets modern grace.",
     discount: "UP TO 35% OFF",
     cta: "Explore Maxis",
     overlay: true,
+    link: "/products",
   },
   {
-    desktopImage:
-      "https://www.biba.in/dw/image/v2/BKQK_PRD/on/demandware.static/-/Library-Sites-BibaSharedLibrary/en_IN/dwded9a678/A-A-SS26/SS'26-Banner-3.jpg",
-    mobileImage:
-      "https://www.biba.in/dw/image/v2/BKQK_PRD/on/demandware.static/-/Library-Sites-BibaSharedLibrary/en_IN/dw6e1be403/A-A-SS26/SS'26-Banner-3-M.jpg",
+    desktopImage: "https://www.biba.in/dw/image/v2/BKQK_PRD/on/demandware.static/-/Library-Sites-BibaSharedLibrary/en_IN/dwded9a678/A-A-SS26/SS'26-Banner-3.jpg",
+    mobileImage: "https://www.biba.in/dw/image/v2/BKQK_PRD/on/demandware.static/-/Library-Sites-BibaSharedLibrary/en_IN/dw6e1be403/A-A-SS26/SS'26-Banner-3-M.jpg",
     showContent: false,
     overlay: false,
+    link: "/products",
   },
 ];
 
 /* ================= COMPONENT ================= */
 const HeroSection = () => {
   const [current, setCurrent] = useState(0);
+  const router = useRouter(); // Initialize router
 
-  const next = useCallback(
-    () => setCurrent((prev) => (prev + 1) % slides.length),
-    [],
-  );
+  const handleRedirection = (link: string) => {
+    router.push(link);
+  };
 
-  const prev = useCallback(
-    () => setCurrent((prev) => (prev - 1 + slides.length) % slides.length),
-    [],
-  );
+  const next = useCallback(() => setCurrent((prev) => (prev + 1) % slides.length), []);
+  const prev = useCallback(() => setCurrent((prev) => (prev - 1 + slides.length) % slides.length), []);
 
   useEffect(() => {
     const timer = setInterval(next, 5500);
@@ -84,13 +78,9 @@ const HeroSection = () => {
 
   const slide = slides[current];
 
-  const getImage = () => {
-    return slide.desktopImage || slide.mobileImage || "";
-  };
-
   return (
     <section className="relative min-h-screen overflow-hidden">
-      {/* ================= IMAGE ================= */}
+      {/* ================= IMAGE & OVERLAY (CLICKABLE) ================= */}
       <AnimatePresence mode="wait">
         <motion.div
           key={current}
@@ -98,29 +88,24 @@ const HeroSection = () => {
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 1 }}
-          className="absolute inset-0"
+          className="absolute inset-0 cursor-pointer" // Added cursor-pointer
+          onClick={() => handleRedirection(slide.link)} // Click on banner redirects
         >
           <picture>
-            {slide.mobileImage && (
-              <source media="(max-width: 768px)" srcSet={slide.mobileImage} />
-            )}
-            {slide.desktopImage && (
-              <source media="(min-width: 769px)" srcSet={slide.desktopImage} />
-            )}
+            {slide.mobileImage && <source media="(max-width: 768px)" srcSet={slide.mobileImage} />}
+            {slide.desktopImage && <source media="(min-width: 769px)" srcSet={slide.desktopImage} />}
             <img
-              src={getImage()}
+              src={slide.desktopImage || slide.mobileImage}
               className="w-full h-full object-cover"
-              alt=""
+              alt={slide.title || "Hero Banner"}
             />
           </picture>
 
-          {/* Overlay (optional) */}
           {slide.overlay !== false && (
             <div
               className="absolute inset-0"
               style={{
-                background:
-                  "linear-gradient(to right, hsla(20,38%,12%,0.85), hsla(20,38%,12%,0.4))",
+                background: "linear-gradient(to right, hsla(20,38%,12%,0.85), hsla(20,38%,12%,0.4))",
               }}
             />
           )}
@@ -129,7 +114,9 @@ const HeroSection = () => {
 
       {/* ================= CONTENT ================= */}
       {slide.showContent !== false && (
-        <div className="relative z-10 min-h-screen flex items-center justify-center text-center px-6">
+        <div className="relative z-10 min-h-screen flex items-center justify-center text-center px-6 pointer-events-none">
+          {/* pointer-events-none allows clicks to pass through to the image, 
+              but we will re-enable them for the CTA button specifically */}
           <AnimatePresence mode="wait">
             <motion.div
               key={current}
@@ -137,73 +124,46 @@ const HeroSection = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -40 }}
               transition={{ duration: 0.8, ease: "easeOut" }}
-              className="max-w-2xl"
+              className="max-w-2xl pointer-events-auto" // Re-enable pointer events for text area
             >
-              {/* Discount */}
               {slide.discount && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                  className="mb-4"
-                >
-                  <span className="text-xs tracking-[0.3em] border px-4 py-1 text-[#D4AF37] border-[#D4AF37]">
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="mb-4">
+                  <span className="text-xs tracking-[0.3em] border px-4 py-1 text-[#D4AF37] border-[#D4AF37] bg-black/20">
                     {slide.discount}
                   </span>
                 </motion.div>
               )}
 
-              {/* Subtitle */}
               {slide.subtitle && (
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.3 }}
-                  className="text-sm uppercase tracking-[0.3em] text-[#F3E1B6] mb-2"
-                >
+                <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="text-sm uppercase tracking-[0.3em] text-[#F3E1B6] mb-2">
                   {slide.subtitle}
                 </motion.p>
               )}
 
-              {/* Title */}
               {slide.title && (
-                <motion.h1
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.4 }}
-                  className="text-5xl md:text-8xl font-bold text-[#F3E1B6] mb-4"
-                >
+                <motion.h1 initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.4 }} className="text-5xl md:text-8xl font-bold text-[#F3E1B6] mb-4 font-serif">
                   {slide.title}
                 </motion.h1>
               )}
 
-              {/* Description (replaces price) */}
               {slide.description && (
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.5 }}
-                  className="text-sm md:text-base text-[#F3E1B6]/80 mb-6 max-w-md mx-auto"
-                >
+                <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} className="text-sm md:text-base text-[#F3E1B6]/80 mb-6 max-w-md mx-auto leading-relaxed">
                   {slide.description}
                 </motion.p>
               )}
 
-              {/* CTA */}
               {slide.cta && (
                 <motion.button
-                  whileHover={{
-                    scale: 1.05,
-                    boxShadow: "0 0 25px rgba(212,175,55,0.5)",
-                  }}
+                  whileHover={{ scale: 1.05, boxShadow: "0 0 25px rgba(212,175,55,0.5)" }}
                   whileTap={{ scale: 0.95 }}
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevents double-triggering since parent is also clickable
+                    handleRedirection(slide.link);
+                  }}
                   className="relative px-8 py-3 border border-[#D4AF37] text-[#F3E1B6] overflow-hidden group cursor-pointer"
                 >
-                  {/* glow layer */}
                   <span className="absolute inset-0 bg-[#D4AF37] opacity-0 group-hover:opacity-20 transition duration-300" />
-
-                  {/* text */}
-                  <span className="relative z-10 tracking-widest">
+                  <span className="relative z-10 tracking-widest uppercase text-xs font-bold">
                     {slide.cta}
                   </span>
                 </motion.button>
@@ -214,31 +174,24 @@ const HeroSection = () => {
       )}
 
       {/* ================= NAVIGATION ================= */}
-      <button
-        onClick={prev}
-        className="absolute left-5 top-1/2 -translate-y-1/2 z-20 text-[#D4AF37]"
-      >
-        <ChevronLeft size={28} />
+      <button onClick={prev} className="absolute left-5 top-1/2 -translate-y-1/2 z-20 text-[#D4AF37] hover:scale-110 transition cursor-pointer p-2">
+        <ChevronLeft size={32} />
       </button>
 
-      <button
-        onClick={next}
-        className="absolute right-5 top-1/2 -translate-y-1/2 z-20 text-[#D4AF37]"
-      >
-        <ChevronRight size={28} />
+      <button onClick={next} className="absolute right-5 top-1/2 -translate-y-1/2 z-20 text-[#D4AF37] hover:scale-110 transition cursor-pointer p-2">
+        <ChevronRight size={32} />
       </button>
 
       {/* ================= DOTS ================= */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3 z-20">
+      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex gap-3 z-20">
         {slides.map((_, i) => (
           <button
             key={i}
             onClick={() => setCurrent(i)}
-            className="h-1 transition-all duration-300"
+            className="h-1 transition-all duration-500 rounded-full"
             style={{
-              width: i === current ? "40px" : "20px",
-              backgroundColor:
-                i === current ? "#D4AF37" : "rgba(212,175,55,0.3)",
+              width: i === current ? "40px" : "15px",
+              backgroundColor: i === current ? "#D4AF37" : "rgba(212,175,55,0.3)",
             }}
           />
         ))}
