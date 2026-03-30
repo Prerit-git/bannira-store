@@ -12,6 +12,7 @@ import {
   Heart,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
+import Link from "next/link";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -60,6 +61,7 @@ export default function Navbar() {
                 scrolled ? "scale-75" : "scale-100"
               }`}
             >
+              <Link href={"/"}>
               <Image
                 src={"/bannira_web_logo.png"}
                 alt="logo"
@@ -68,6 +70,7 @@ export default function Navbar() {
                 priority
                 className="object-contain w-auto h-auto scale-90"
               />
+              </Link>
             </div>
 
             <div className="flex items-center gap-2">
@@ -108,6 +111,7 @@ export default function Navbar() {
                 scrolled ? "scale-75" : "scale-100"
               }`}
             >
+              <Link href={"/"}>
               <Image
                 src={"/bannira_web_logo.png"}
                 alt="logo"
@@ -116,6 +120,7 @@ export default function Navbar() {
                 priority
                 className="object-contain w-auto h-auto scale-80 md:scale-100"
               />
+              </Link>
             </div>
 
             {/* Search Box center */}
