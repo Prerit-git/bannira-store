@@ -34,23 +34,29 @@ export default function Navbar() {
   const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
   
   const [scrolled, setScrolled] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false); // Mobile search state
+  const [searchOpen, setSearchOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  // Scroll effect
+  // --- Protected Route Handler ---
+  const handleProtectedNavigation = (e: React.MouseEvent, path: string) => {
+    e.preventDefault();
+    if (!isLoggedIn) {
+      setRedirectPath(path); // Taki login ke baad wapas yahi aaye
+      router.push("/login");
+    } else {
+      router.push(path);
+    }
+    setMenuOpen(false); // Mobile menu close karne ke liye
+  };
+
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 40);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Scroll lock jab menu ya search open ho
   useEffect(() => {
-    if (menuOpen || searchOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
+    document.body.style.overflow = menuOpen || searchOpen ? "hidden" : "";
   }, [menuOpen, searchOpen]);
 
   const handleLogout = () => {
@@ -77,12 +83,12 @@ export default function Navbar() {
       <header className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 ${navbarBg}`}>
         <div className="max-w-7xl mx-auto px-6">
           
-          {/* ================= DESKTOP NAVBAR ================= */}
           <div className="hidden md:flex items-center justify-between py-2">
             <Link href={"/"} className={`transition-all duration-500 ${scrolled ? "scale-75" : "scale-100"}`}>
               <Image src={"/bannira_web_logo.png"} alt="logo" width={180} height={80} priority className="object-contain w-auto h-auto" />
             </Link>
 
+            {/* Search Box */}
             <div className="flex-1 px-10">
               <div className="relative w-full max-w-xl mx-auto group">
                 <input 
@@ -95,45 +101,45 @@ export default function Navbar() {
             </div>
 
             <div className="flex items-center gap-8">
-              {/* Profile, Wishlist, Cart Desktop Icons (Existing Logic) */}
-              {/* ... (Maintained as per your previous code) ... */}
+              {/* Profile Dropdown */}
               <div className="relative group flex flex-col items-center cursor-pointer">
                 <User size={24} className="text-white group-hover:text-[#D4AF37] transition-colors" />
                 <span className="text-[10px] uppercase tracking-widest text-white mt-1">Profile</span>
                 <div className="absolute top-full right-0 mt-2 w-60 bg-white rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 border border-gray-100">
-                   {/* Dropdown Content */}
                    <div className="p-5">
                     {isLoggedIn ? (
                       <div className="space-y-1 text-left">
                         <Link href="/profile" className="flex items-center gap-3 py-2 text-sm text-gray-700 hover:text-[#7B2D0A]"><UserCircle size={18} /> Profile</Link>
-                        <button onClick={handleLogout} className="flex items-center gap-3 py-2 w-full text-sm text-red-600 font-bold"><LogOut size={18} /> Logout</button>
+                        <button onClick={handleLogout} className="flex items-center gap-3 py-2 w-full text-sm text-red-600 font-bold transition-colors"><LogOut size={18} /> Logout</button>
                       </div>
                     ) : (
-                      <button onClick={handleLoginClick} className="w-full bg-[#7B2D0A] text-white py-3 rounded-lg text-[11px] font-black uppercase tracking-widest">Login</button>
+                      <button onClick={handleLoginClick} className="w-full bg-[#7B2D0A] text-white py-3 rounded-lg text-[11px] font-black uppercase tracking-widest hover:bg-[#D4AF37] transition-all">Login</button>
                     )}
                   </div>
                 </div>
               </div>
 
-              <Link href="/wishlist" className="flex flex-col items-center relative group text-white">
-                <Heart size={24} />
+              {/* Protected Wishlist (Desktop) */}
+              <button onClick={(e) => handleProtectedNavigation(e, "/wishlist")} className="flex flex-col items-center relative group text-white">
+                <Heart size={24} className="group-hover:text-[#D4AF37] transition-colors" />
                 {wishlistCount > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-[#D4AF37] text-black text-[10px] font-bold h-4 w-4 flex items-center justify-center rounded-full">
+                  <span className="absolute -top-2 -right-2 bg-[#D4AF37] text-black text-[10px] font-bold h-4 w-4 flex items-center justify-center rounded-full shadow-md">
                     {wishlistCount}
                   </span>
                 )}
                 <span className="text-[10px] uppercase tracking-widest mt-1">Wishlist</span>
-              </Link>
+              </button>
 
-              <Link href="/cart" className="flex flex-col items-center relative group text-white">
-                <ShoppingBag size={24} />
+              {/* Protected Bag (Desktop) */}
+              <button onClick={(e) => handleProtectedNavigation(e, "/cart")} className="flex flex-col items-center relative group text-white">
+                <ShoppingBag size={24} className="group-hover:text-[#D4AF37] transition-colors" />
                 {cartCount > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-[#D4AF37] text-black text-[10px] font-bold h-4 w-4 flex items-center justify-center rounded-full">
+                  <span className="absolute -top-2 -right-2 bg-[#D4AF37] text-black text-[10px] font-bold h-4 w-4 flex items-center justify-center rounded-full shadow-md">
                     {cartCount}
                   </span>
                 )}
                 <span className="text-[10px] uppercase tracking-widest mt-1">Bag</span>
-              </Link>
+              </button>
             </div>
           </div>
 
@@ -144,84 +150,59 @@ export default function Navbar() {
             </Link>
 
             <div className="flex items-center gap-1">
-              {/* FIXED: Search Trigger */}
-              <button 
-                onClick={() => setSearchOpen(true)} 
-                className="p-2 text-white active:scale-90 transition-transform"
-              >
-                <SearchIcon size={22} />
-              </button>
+              <button onClick={() => setSearchOpen(true)} className="p-2 text-white active:scale-90 transition-transform"><SearchIcon size={22} /></button>
               
-              <Link href="/wishlist" className="relative p-2 text-white">
+              {/* Protected Wishlist (Mobile) */}
+              <button onClick={(e) => handleProtectedNavigation(e, "/wishlist")} className="relative p-2 text-white">
                 <Heart size={22} />
                 {wishlistCount > 0 && (
                   <span className="absolute top-1 right-1 bg-[#D4AF37] text-black text-[9px] font-bold h-3.5 w-3.5 flex items-center justify-center rounded-full">
                     {wishlistCount}
                   </span>
                 )}
-              </Link>
+              </button>
 
-              <Link href="/cart" className="relative p-2 text-white">
+              {/* Protected Bag (Mobile) */}
+              <button onClick={(e) => handleProtectedNavigation(e, "/cart")} className="relative p-2 text-white">
                 <ShoppingBag size={22} />
                 {cartCount > 0 && (
                   <span className="absolute top-1 right-1 bg-[#D4AF37] text-black text-[9px] font-bold h-3.5 w-3.5 flex items-center justify-center rounded-full">
                     {cartCount}
                   </span>
                 )}
-              </Link>
-
-              <button 
-                onClick={() => setMenuOpen(true)} 
-                className="p-2 text-white"
-              >
-                <Menu size={24} />
               </button>
+
+              <button onClick={() => setMenuOpen(true)} className="p-2 text-white"><Menu size={24} /></button>
             </div>
           </div>
         </div>
       </header>
 
-      {/* MOBILE SEARCH OVERLAY (Fixed Logic) */}
+      {/* MOBILE SEARCH OVERLAY (Remains same) */}
       <AnimatePresence>
         {searchOpen && (
-          <motion.div 
-            initial={{ opacity: 0, y: -20 }} 
-            animate={{ opacity: 1, y: 0 }} 
-            exit={{ opacity: 0, y: -20 }} 
-            className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl flex flex-col p-6"
-          >
-            <div className="flex justify-end">
-              <button onClick={() => setSearchOpen(false)} className="text-white p-2">
-                <X size={32} />
-              </button>
-            </div>
+          <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl flex flex-col p-6">
+            <div className="flex justify-end"><button onClick={() => setSearchOpen(false)} className="text-white p-2"><X size={32} /></button></div>
             <div className="mt-20 relative px-4">
               <p className="text-[#D4AF37] text-[10px] uppercase tracking-[0.4em] mb-4 font-bold">Search Bannira</p>
-              <input 
-                autoFocus 
-                type="search" 
-                placeholder="Dresses, Kurtis, Sets..." 
-                className="w-full bg-transparent border-b border-white/30 py-4 text-2xl text-white outline-none focus:border-[#D4AF37] transition-colors" 
-              />
+              <input autoFocus type="search" placeholder="Dresses, Kurtis, Sets..." className="w-full bg-transparent border-b border-white/30 py-4 text-2xl text-white outline-none focus:border-[#D4AF37] transition-colors" />
               <SearchIcon size={24} className="absolute right-4 top-[70%] -translate-y-1/2 text-white/50" />
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* MOBILE SIDE DRAWER (Existing Logic) */}
+      {/* MOBILE SIDE DRAWER */}
       <AnimatePresence>
         {menuOpen && (
           <>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setMenuOpen(false)} className="fixed inset-0 z-[90] bg-black/60 backdrop-blur-sm" />
             <motion.div initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ type: "spring", damping: 25 }} className="fixed top-0 right-0 h-full w-[85%] max-w-sm bg-white z-[100] flex flex-col">
-              {/* Drawer Content */}
               <div className="p-6 border-b flex justify-between items-center">
                 <p className="font-serif text-xl text-[#7B2D0A] font-bold italic text-center w-full">Bannira</p>
                 <X size={24} onClick={() => setMenuOpen(false)} className="text-gray-400 absolute right-6" />
               </div>
               <div className="flex-1 overflow-y-auto p-6 space-y-8">
-                {/* User Info & Links */}
                 <div className="bg-gray-50 p-5 rounded-2xl">
                   {isLoggedIn ? (
                     <button onClick={handleLogout} className="w-full text-red-600 font-bold uppercase text-[10px] tracking-widest">Logout</button>
@@ -231,8 +212,22 @@ export default function Navbar() {
                 </div>
                 <div className="space-y-1">
                   <MobileNavLink href="/products" onClick={() => setMenuOpen(false)} label="New Arrivals" />
-                  <MobileNavLink href="/wishlist" onClick={() => setMenuOpen(false)} label={`Wishlist (${wishlistCount})`} />
-                  <MobileNavLink href="/cart" onClick={() => setMenuOpen(false)} label={`Bag (${cartCount})`} />
+                  
+                  {/* Protected Wishlist (Drawer) */}
+                  <button 
+                    onClick={(e) => handleProtectedNavigation(e, "/wishlist")} 
+                    className="w-full flex items-center justify-between py-5 border-b border-gray-50 text-[#2A1A12] font-medium text-base active:text-[#7B2D0A] transition-colors"
+                  >
+                    Wishlist ({wishlistCount}) <ArrowRight size={18} className="text-gray-300" />
+                  </button>
+
+                  {/* Protected Cart (Drawer) */}
+                  <button 
+                    onClick={(e) => handleProtectedNavigation(e, "/cart")} 
+                    className="w-full flex items-center justify-between py-5 border-b border-gray-50 text-[#2A1A12] font-medium text-base active:text-[#7B2D0A] transition-colors"
+                  >
+                    Bag ({cartCount}) <ArrowRight size={18} className="text-gray-300" />
+                  </button>
                 </div>
               </div>
             </motion.div>
