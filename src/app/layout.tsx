@@ -4,6 +4,9 @@ import { Libre_Baskerville, Poppins } from "next/font/google";
 import ClientWrapper from "./ClientWrapper";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
+import { WishlistProvider } from "@/context/WishlistContext";
+import { AuthProvider } from "@/context/AuthContext";
+import { CartProvider } from "@/context/CartContext";
 
 const libre = Libre_Baskerville({
   subsets: ["latin"],
@@ -31,11 +34,17 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${libre.variable} ${poppins.variable} antialiased`}>
+        <AuthProvider>
+          <CartProvider>
+        <WishlistProvider>
         <ClientWrapper>
         <Navbar/>
         {children}
         <Footer/>
         </ClientWrapper>
+        </WishlistProvider>
+        </CartProvider>
+        </AuthProvider>
       </body>
     </html>
   );
