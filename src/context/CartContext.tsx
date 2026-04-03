@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react"; // Added useCallback
 
 interface CartItem {
   id: string;
@@ -14,19 +14,27 @@ interface CartItem {
 interface CartContextType {
   cart: CartItem[];
   addToCart: (product: any, size: string) => void;
-  updateQuantity: (id: string, size: string, newQuantity: number) => void; // Added
+  updateQuantity: (id: string, size: string, newQuantity: number) => void;
   removeFromCart: (id: string, size: string) => void;
   clearCart: () => void;
   totalPrice: number;
+  appliedCoupon: string | null;
+  discount: number;
+  applyCoupon: (code: string) => boolean;
+  removeCoupon: () => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
+  const [discount, setDiscount] = useState(0);
 
   useEffect(() => {
     const savedCart = localStorage.getItem("bannira_cart");
+    const savedCoupon = localStorage.getItem("bannira_coupon");
+    
     if (savedCart) {
       try {
         setCart(JSON.parse(savedCart));
@@ -34,11 +42,27 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
         console.error("Failed to parse cart", e);
       }
     }
+    if (savedCoupon) setAppliedCoupon(savedCoupon);
   }, []);
 
   useEffect(() => {
     localStorage.setItem("bannira_cart", JSON.stringify(cart));
-  }, [cart]);
+    if (appliedCoupon) {
+      localStorage.setItem("bannira_coupon", appliedCoupon);
+    } else {
+      localStorage.removeItem("bannira_coupon");
+    }
+  }, [cart, appliedCoupon]);
+
+  const totalPrice = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+
+  useEffect(() => {
+    if (appliedCoupon === "BANNIRA10") {
+      setDiscount(Math.round(totalPrice * 0.10));
+    } else {
+      setDiscount(0);
+    }
+  }, [totalPrice, appliedCoupon]);
 
   const addToCart = (product: any, size: string) => {
     setCart((prev) => {
@@ -50,7 +74,6 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
             : item
         );
       }
-      // Pehle se structured data bhej rahe hain taaki koi missing field na ho
       return [...prev, { 
         id: product.id, 
         name: product.name, 
@@ -62,9 +85,8 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     });
   };
 
-  // Naya Function: Quantity update karne ke liye
   const updateQuantity = (id: string, size: string, newQuantity: number) => {
-    if (newQuantity < 1) return; // 1 se kam nahi hone dega
+    if (newQuantity < 1) return;
     setCart((prev) =>
       prev.map((item) =>
         item.id === id && item.size === size
@@ -78,12 +100,43 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     setCart((prev) => prev.filter((item) => !(item.id === id && item.size === size)));
   };
 
-  const clearCart = () => setCart([]);
+  // ==========================================
+  // FIX: wrap clearCart in useCallback
+  // ==========================================
+  const clearCart = useCallback(() => {
+    setCart([]);
+    setAppliedCoupon(null);
+    setDiscount(0);
+    localStorage.removeItem("bannira_cart");
+    localStorage.removeItem("bannira_coupon");
+  }, []); 
 
-  const totalPrice = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  const applyCoupon = (code: string) => {
+    if (code.toUpperCase() === "BANNIRA10") {
+      setAppliedCoupon("BANNIRA10");
+      return true;
+    }
+    return false;
+  };
+
+  const removeCoupon = () => {
+    setAppliedCoupon(null);
+    setDiscount(0);
+  };
 
   return (
-    <CartContext.Provider value={{ cart, addToCart, updateQuantity, removeFromCart, clearCart, totalPrice }}>
+    <CartContext.Provider value={{ 
+      cart, 
+      addToCart, 
+      updateQuantity, 
+      removeFromCart, 
+      clearCart, 
+      totalPrice,
+      appliedCoupon,
+      discount,
+      applyCoupon,
+      removeCoupon
+    }}>
       {children}
     </CartContext.Provider>
   );
