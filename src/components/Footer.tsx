@@ -47,7 +47,6 @@ const Footer: React.FC = () => {
           </ul>
         </div>
 
-        {/* Customer Service */}
         <div>
           <h3 className="text-white font-semibold text-lg mb-6">
             Customer Service
@@ -76,7 +75,6 @@ const Footer: React.FC = () => {
           </ul>
         </div>
 
-        {/* Social Media */}
         <div>
           <h3 className="text-white font-semibold text-lg mb-6">Follow Us</h3>
           <div className="flex space-x-6 text-gray-400">
@@ -117,7 +115,6 @@ const Footer: React.FC = () => {
         </div>
       </div>
 
-      {/* Bottom copyright */}
       <div className="border-t border-gray-700 mt-16 pt-8 text-center text-gray-500 text-sm select-none">
         &copy; {new Date().getFullYear()} Bannira. All rights reserved.
       </div>

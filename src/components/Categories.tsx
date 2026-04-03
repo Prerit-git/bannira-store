@@ -48,9 +48,7 @@ const PremiumCategories = () => {
           </div>
         </div>
 
-        {/* Bento Grid — 2 rows */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 max-w-6xl mx-auto">
-          {/* Row 1: large + small */}
           <a
             href="#"
             className="group relative overflow-hidden lg:col-span-2 aspect-[16/9] md:aspect-[16/8]"
@@ -64,7 +62,6 @@ const PremiumCategories = () => {
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
             />
             <div className="absolute inset-0 bg-linear-to-t from-[#7B2D0A]/90 via-[#7B2D0A]/30 to-transparent" />
-            {/* Ornate corner */}
             <div className="absolute top-4 left-4 w-10 h-10 border-t-2 border-l-2 border-[#ffffff]/50" />
             <div className="absolute top-4 right-4 w-10 h-10 border-t-2 border-r-2 border-[#ffffff]/50" />
             <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
@@ -109,7 +106,6 @@ const PremiumCategories = () => {
             </div>
           </a>
 
-          {/* Row 2: small + large */}
           <a
             href="#"
             className="group relative overflow-hidden aspect-[3/4] md:aspect-auto"

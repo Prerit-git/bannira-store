@@ -28,16 +28,11 @@ export default function OrderSuccessPage() {
     <div className="min-h-screen bg-[#FDFCFB] pb-20 pt-30 md:pt-40 px-4 select-none">
       <div className="max-w-[600px] mx-auto">
         
-        {/* --- TOP APP BAR (MOBILE FEEL) --- */}
         <div className="flex items-center justify-center mb-5 md:hidden">
-          {/* <Link href="/" className="p-2 bg-white rounded-full shadow-sm border border-stone-100">
-            <ArrowLeft size={18} />
-          </Link> */}
+          
           <span className="text-[10px] font-black uppercase tracking-[0.3em] text-stone-400 bg-green-200 px-2 py-2 rounded-full">Order Confirmed</span>
-          {/* <div className="w-9" /> */}
         </div>
 
-        {/* --- ROYAL HEADER --- */}
         <div className="text-center mb-12">
           <motion.div 
             initial={{ scale: 0.5, opacity: 0 }} 
@@ -47,7 +42,6 @@ export default function OrderSuccessPage() {
             <div className="w-20 h-20 bg-[#1C1C1C] rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl relative z-10">
               <Check size={36} className="text-[#D4AF37]" strokeWidth={3} />
             </div>
-            {/* Animated Gold Ring */}
             <motion.div 
               animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0, 0.5] }}
               transition={{ repeat: Infinity, duration: 2 }}
@@ -59,10 +53,8 @@ export default function OrderSuccessPage() {
           <p className="text-stone-400 text-xs font-bold uppercase tracking-widest">Order #{order.orderId}</p>
         </div>
 
-        {/* --- MAIN CONTENT CARDS --- */}
         <div className="space-y-4">
           
-          {/* 1. STATUS CARD (APP STYLE) */}
           <div className="bg-white rounded-[2rem] p-6 shadow-[0_10px_30px_rgba(0,0,0,0.03)] border border-stone-50 flex items-center gap-5">
             <div className="w-12 h-12 bg-stone-50 rounded-2xl flex items-center justify-center text-[#7B2D0A]">
               <Truck size={22} />
@@ -73,7 +65,6 @@ export default function OrderSuccessPage() {
             </div>
           </div>
 
-          {/* 2. ORDER DETAILS (MODERN LOOK) */}
           <div className="bg-white rounded-[2rem] overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.03)] border border-stone-50">
             <div className="p-6 md:p-8 space-y-6">
               <div className="flex items-center justify-between border-b border-stone-50 pb-4">
@@ -105,14 +96,12 @@ export default function OrderSuccessPage() {
                 </div>
               </div>
             </div>
-            {/* Bottom Accent */}
             <div className="bg-stone-50 px-6 py-4 flex items-center justify-between text-[9px] font-black uppercase tracking-widest text-stone-400">
               <span className="flex items-center gap-2"><ShieldCheck size={12} className="text-green-600"/> Secure Payment</span>
               <span>{order.paymentMethod}</span>
             </div>
           </div>
 
-          {/* 3. SHIPPING INFO (CLEAN) */}
           <div className="bg-white rounded-[2rem] p-6 md:p-8 shadow-[0_10px_30px_rgba(0,0,0,0.03)] border border-stone-50">
             <div className="flex items-start gap-4">
               <div className="p-3 bg-[#7B2D0A]/5 rounded-2xl text-[#7B2D0A]">
@@ -130,7 +119,6 @@ export default function OrderSuccessPage() {
           </div>
         </div>
 
-        {/* --- TRACKING BUTTON (APP ACTION) --- */}
         <div className="mt-10 px-2">
           <Link 
             href="/profile/orders" 
@@ -141,13 +129,12 @@ export default function OrderSuccessPage() {
           
           <div className="mt-8 text-center space-y-4">
              <button className="text-[10px] font-black uppercase tracking-widest text-stone-300 hover:text-stone-900 transition-colors flex items-center gap-2 mx-auto">
-               <Download size={14} /> Download Receipt
+               <Download size={14} /> Download Invoice
              </button>
              <p className="text-[10px] text-stone-400 italic">Expected arrival in 3-5 business days.</p>
           </div>
         </div>
 
-        {/* --- CONTINUE SHOPPING --- */}
         <div className="mt-16 text-center">
           <Link href="/" className="inline-flex items-center gap-2 px-6 py-3 bg-white rounded-full border border-stone-100 shadow-sm text-[10px] font-black uppercase tracking-widest text-stone-400 hover:text-black transition-all">
             <ShoppingBag size={14} /> Back to Store

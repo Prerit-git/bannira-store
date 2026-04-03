@@ -69,7 +69,6 @@ export default function CheckoutPage() {
 
     setFormData((prev) => ({ ...prev, [name]: value }));
 
-    // PINCODE API - Improved for Indian Data
     if (name === "pincode" && value.length === 6) {
       setIsPincodeLoading(true);
       try {
@@ -98,13 +97,11 @@ export default function CheckoutPage() {
   const handlePlaceOrder = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // 1. Mandatory Fields Validation
     if (!formData.fullName || !formData.email || !formData.address || !formData.pincode || !formData.state) {
       alert("Please fill all mandatory fields to proceed.");
       return;
     }
 
-    // 2. Create New Order Object
     const newOrder = {
       orderId: `BAN${Math.floor(100000 + Math.random() * 900000)}`,
       items: cart,
@@ -114,18 +111,14 @@ export default function CheckoutPage() {
       date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })
     };
 
-    // 3. PERSISTENCE LOGIC: Fetch existing orders from LocalStorage
     const existingOrdersString = localStorage.getItem("bannira_orders");
     const existingOrders = existingOrdersString ? JSON.parse(existingOrdersString) : [];
 
-    // 4. Add new order at the top (Unshift) and Save back
     const updatedOrders = [newOrder, ...existingOrders];
     localStorage.setItem("bannira_orders", JSON.stringify(updatedOrders));
 
-    // 5. Save Current Order for the Success Page
     sessionStorage.setItem("lastOrder", JSON.stringify(newOrder));
     
-    // 6. Navigate to Success Page
     router.push("/order-success");
   };
 

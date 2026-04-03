@@ -1,6 +1,6 @@
 "use client";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Check, Ruler } from "lucide-react"; // Ruler icon added for premium feel
+import { X, Check, Ruler } from "lucide-react";
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 
@@ -28,7 +28,6 @@ export default function SizeSelectionModal({ isOpen, onClose, onConfirm, product
 
   return createPortal(
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 md:p-6">
-      {/* Backdrop with Heavy Blur */}
       <motion.div 
         initial={{ opacity: 0 }} 
         animate={{ opacity: 1 }} 
@@ -37,7 +36,6 @@ export default function SizeSelectionModal({ isOpen, onClose, onConfirm, product
         className="fixed inset-0 bg-black/60 backdrop-blur-sm cursor-pointer"
       />
       
-      {/* Premium Modal Card */}
       <motion.div 
         initial={{ scale: 0.9, opacity: 0, y: 30 }} 
         animate={{ scale: 1, opacity: 1, y: 0 }} 
@@ -56,7 +54,6 @@ export default function SizeSelectionModal({ isOpen, onClose, onConfirm, product
         </button>
         
         <div className="p-8 md:p-12">
-          {/* Header Section */}
           <header className="text-center mb-10">
             <motion.div 
               initial={{ y: -10, opacity: 0 }}
@@ -107,12 +104,6 @@ export default function SizeSelectionModal({ isOpen, onClose, onConfirm, product
             })}
           </div>
 
-          {/* Footer Info */}
-          {/* <div className="flex items-center justify-center gap-2 mb-10 text-stone-400 hover:text-[#7B2D0A] cursor-pointer transition-colors group">
-            <Ruler size={14} className="group-hover:rotate-12 transition-transform" />
-            <span className="text-[10px] font-bold uppercase tracking-widest">Size Guide & Measurements</span>
-          </div> */}
-
           {/* Action Button */}
           <motion.button 
             whileHover={{ scale: 1.02 }}
@@ -143,7 +134,6 @@ export default function SizeSelectionModal({ isOpen, onClose, onConfirm, product
   );
 }
 
-// Minimal Arrow Icon for the Button
 const ArrowIcon = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
     <path d="M5 12h14m-7-7 7 7-7 7"/>

@@ -40,7 +40,6 @@ export default function Navbar() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  // --- Protected Route Handler ---
   const handleProtectedNavigation = (e: any, path: string) => {
     e.preventDefault();
     if (!isLoggedIn) {
@@ -237,7 +236,6 @@ export default function Navbar() {
         </div>
       </header>
 
-      {/* MOBILE DRAWER - NEW LUXURY STYLE */}
       <AnimatePresence>
         {menuOpen && (
           <>
@@ -256,7 +254,6 @@ export default function Navbar() {
               transition={{ type: "spring", damping: 28, stiffness: 240 }}
               className="fixed top-0 right-0 h-full w-[88%] max-w-sm bg-[#FDFCFB] z-[100] flex flex-col shadow-2xl"
             >
-              {/* 1. DRAWER TOP NAV (Text Hataya, Icon-First) */}
               <div className="p-6 flex justify-between items-center bg-white/50 backdrop-blur-md">
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-[#D4AF37] rounded-full animate-pulse" />
@@ -272,15 +269,12 @@ export default function Navbar() {
                 </button>
               </div>
 
-              {/* 2. USER PROFILE HERO (Royal Style) */}
               <div className="px-6 py-4">
                 {isLoggedIn ? (
                   <div className="bg-[#1C1C1C] rounded-[2.5rem] p-6 text-white relative overflow-hidden shadow-xl">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-[#D4AF37]/20 blur-3xl rounded-full" />
                     <div className="flex items-center gap-5 relative z-10">
-                      {/* <div className="w-14 h-14 bg-[#D4AF37] rounded-2xl flex items-center justify-center text-black font-serif text-2xl font-bold italic shadow-lg">
-                  {userPhone?.charAt(0) || 'B'} 
-                </div> */}
+                      
                       <div>
                         <p className="text-[9px] font-black uppercase tracking-[0.2em] text-[#D4AF37] mb-0.5">
                           Active User
@@ -324,7 +318,6 @@ export default function Navbar() {
                 )}
               </div>
 
-              {/* 3. APP-STYLE GRID NAVIGATION */}
               <div className="flex-1 overflow-y-auto px-6 py-6 space-y-10 no-scrollbar">
                 <div className="grid grid-cols-2 gap-4">
                   <ActionTile
@@ -345,7 +338,6 @@ export default function Navbar() {
                   />
                 </div>
 
-                {/* MINIMALIST CATEGORY LIST */}
                 <section className="space-y-4">
                   <p className="text-[10px] font-black uppercase tracking-[0.4em] text-stone-300 px-2">
                     Collections
@@ -372,7 +364,6 @@ export default function Navbar() {
                   </div>
                 </section>
 
-                {/* SUPPORT TILE */}
                 <div className="p-6 bg-[#7B2D0A]/5 rounded-[2rem] border border-[#7B2D0A]/10 flex items-center justify-between group">
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-[#7B2D0A] shadow-sm">
@@ -394,7 +385,6 @@ export default function Navbar() {
                 </div>
               </div>
 
-              {/* 4. FIXED SOCIAL FOOTER */}
               <div className="p-8 border-t border-stone-100 bg-white flex justify-between items-center">
                 <div className="flex gap-6">
                   <span className="text-[10px] font-black uppercase tracking-widest text-stone-400 hover:text-black transition-colors">
@@ -413,7 +403,6 @@ export default function Navbar() {
         )}
       </AnimatePresence>
 
-      {/* MOBILE SEARCH OVERLAY */}
       <AnimatePresence>
         {searchOpen && (
           <motion.div
@@ -452,7 +441,6 @@ export default function Navbar() {
   );
 }
 
-// --- HELPER COMPONENTS ---
 
 function ActionTile({ icon, title, subtitle, onClick }: any) {
   return (

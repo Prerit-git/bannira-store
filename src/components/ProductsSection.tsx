@@ -1,7 +1,9 @@
 "use client";
 
 import { Swiper, SwiperSlide } from "swiper/react";
+// @ts-ignore
 import "swiper/css";
+// @ts-ignore
 import "swiper/css/navigation";
 
 import { Navigation, Autoplay } from "swiper/modules";
@@ -26,7 +28,6 @@ const ProductsSection = () => {
             Featured Collection
           </h2>
 
-          {/* animated divider */}
           <div className="flex items-center justify-center gap-4">
             <div className="h-px w-20 bg-linear-to-r from-transparent via-[#D4AF37] to-transparent" />
             <div className="w-2 h-2 rotate-45 border border-[#D4AF37]" />

@@ -9,7 +9,6 @@ const categories = [
     id: 1,
     name: "Short Kurti",
     image: "/assets/Products/product-4.jpg",
-    // Link includes query for automatic filtering later
     href: "/products?category=Short+Kurti",
   },
   {
@@ -76,17 +75,13 @@ const ShowcaseSection: React.FC = () => {
                   loading="lazy"
                 />
 
-                {/* Royal Overlay Gradient */}
                 <div className="absolute inset-0 bg-linear-to-t from-[#2A1A12] via-transparent to-transparent opacity-80" />
 
-                {/* Content Container */}
                 <div className="absolute inset-0 flex flex-col justify-end p-4 md:p-8">
-                  {/* Category Name */}
                   <h3 className="text-white text-xl md:text-2xl font-serif mb-4 transform transition-transform duration-500 group-hover:-translate-y-2">
                     {name}
                   </h3>
                   
-                  {/* Subtle Bordered Button */}
                   <div className="overflow-hidden">
                     <span className="inline-block border-b border-[#D4AF37] text-[#F3E1B6] text-[10px] md:text-xs font-bold uppercase tracking-[0.3em] pb-1 transform translate-y-8 transition-transform duration-500 group-hover:translate-y-0">
                       Explore Style

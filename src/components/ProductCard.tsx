@@ -9,7 +9,7 @@ import { Product } from "@/data/products";
 import { useWishlist } from "@/context/WishlistContext";
 import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
-import { useRouter, usePathname } from "next/navigation"; // usePathname add kiya
+import { useRouter, usePathname } from "next/navigation";
 import SizeSelectionModal from "./SizeSelectionModal";
 
 interface ProductCardProps {
@@ -21,7 +21,7 @@ const ProductCard = ({ product, onAddToCartSuccess }: ProductCardProps) => {
   const { id, name, category, price, originalPrice, images, badge, sizes, quantity } = product;
   
   const router = useRouter();
-  const pathname = usePathname(); // Current path check karne ke liye
+  const pathname = usePathname();
   const { isLoggedIn, setRedirectPath } = useAuth();
   const { toggleWishlist, isInWishlist } = useWishlist();
   const { addToCart, cart } = useCart();
@@ -73,7 +73,6 @@ const ProductCard = ({ product, onAddToCartSuccess }: ProductCardProps) => {
     addToCart(product, size);
     setShowModal(false);
     
-    // Condition: Toast tabhi dikhao jab hum wishlist page par NA HO
     if (!isWishlistPage) {
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 5000);
@@ -156,7 +155,6 @@ const ProductCard = ({ product, onAddToCartSuccess }: ProductCardProps) => {
         </div>
       </div>
 
-      {/* --- SUCCESS TOAST (Sirf tab dikhega jab wishlist page par nahi honge) --- */}
       {mounted && !isWishlistPage && createPortal(
         <AnimatePresence>
           {showSuccess && (

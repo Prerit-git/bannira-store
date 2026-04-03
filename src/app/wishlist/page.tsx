@@ -37,7 +37,6 @@ export default function WishlistPage() {
         {/* --- HEADER --- */}
         <header className="mb-10 flex flex-col gap-6">
           <div className="flex items-center justify-between border-b border-stone-100 pb-6">
-            {/* NEW: Back Button using useRouter */}
             <button
               onClick={() => router.back()}
               className="group flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.2em] text-stone-900 transition-all active:scale-95"
@@ -48,7 +47,6 @@ export default function WishlistPage() {
               Back
             </button>
 
-            {/* IMPROVED: Clear List Button */}
             {wishlist.length > 0 && (
               <button
                 onClick={clearWishlist}
@@ -96,7 +94,6 @@ export default function WishlistPage() {
               </AnimatePresence>
             </div>
 
-            {/* NEW: Bottom Continue Shopping CTA */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -144,11 +141,9 @@ export default function WishlistPage() {
             initial={{ y: 100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 100, opacity: 0 }}
-            // Fixed Positioning: Sabhi screens par center karne ka sabse solid tarika
             className="fixed bottom-6 left-0 right-0 z-[9999] flex justify-center px-4 md:px-0 pointer-events-none"
           >
             <div className="w-full max-w-[420px] bg-[#1C1C1C] text-white rounded-[2rem] shadow-[0_30px_60px_rgba(0,0,0,0.4)] border border-white/10 p-3 flex items-center justify-between gap-2 backdrop-blur-2xl pointer-events-auto">
-              {/* Left Side: Icon & Info */}
               <div className="flex items-center gap-3 pl-2">
                 <div className="h-10 w-10 bg-gradient-to-br from-[#D4AF37] to-[#7B2D0A] rounded-2xl flex items-center justify-center shrink-0 shadow-lg">
                   <CheckCircle2 size={20} className="text-white" />
@@ -163,7 +158,6 @@ export default function WishlistPage() {
                 </div>
               </div>
 
-              {/* Right Side: Action & Close */}
               <div className="flex items-center gap-1 md:gap-2 shrink-0">
                 <Link
                   href="/cart"

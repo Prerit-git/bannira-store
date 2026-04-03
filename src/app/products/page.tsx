@@ -30,7 +30,6 @@ export default function ProductsPage() {
     };
   }, [isFilterOpen, isSortOpen]);
 
-  // Dynamic Filter Values
   const categories = [...new Set(products.map((p) => p.category))];
   const sizes = [...new Set(products.flatMap((p) => p.sizes))];
   const colors = [...new Set(products.map((p) => p.color))];
@@ -39,7 +38,7 @@ export default function ProductsPage() {
     { label: "Under ₹1000", min: 0, max: 1000 },
     { label: "₹1000 - ₹2000", min: 1000, max: 2000 },
     { label: "₹2000 - ₹3000", min: 2000, max: 3000 },
-    { label: "Above ₹3000", min: 3000, max: 100000 }, // High number for 'Above'
+    { label: "Above ₹3000", min: 3000, max: 100000 },
   ];
 
   const toggleFilter = <T extends string | number>(
@@ -91,7 +90,6 @@ export default function ProductsPage() {
     return 0;
   });
 
-  // ANIMATION VARIANTS
   const overlayVariants = {
     hidden: { opacity: 0 },
     visible: { opacity: 1 },
@@ -128,7 +126,6 @@ export default function ProductsPage() {
           <span className="group-hover:translate-x-0.5 transition-transform">Home</span>
         </a>
         
-        {/* Elegant Separator */}
         <div className="w-1 h-1 rounded-full bg-gray-300" />
         
         <span className="text-[#D4AF37]">Shop</span>
@@ -279,8 +276,7 @@ export default function ProductsPage() {
         </section>
       </div>
 
-      {/* MOBILE CTA BAR */}
-      {/* MOBILE CTA BAR */}
+      
       <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-40 w-[85%] md:hidden flex bg-[#2A1A12] rounded-2xl shadow-2xl border border-white/10 overflow-hidden">
         <button
           onClick={() => setIsFilterOpen(true)}

@@ -2,9 +2,11 @@
 
 import React from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { motion, AnimatePresence } from "framer-motion"; // Added for smoother content transitions
-import { useRouter } from "next/navigation"; // Added for redirection
+import { motion, AnimatePresence } from "framer-motion";
+import { useRouter } from "next/navigation"; 
+// @ts-ignore
 import "swiper/css";
+// @ts-ignore
 import "swiper/css/effect-fade";
 
 import { Autoplay, EffectFade } from "swiper/modules";
@@ -15,7 +17,7 @@ type Slide = {
   title: string;
   subtitle: string;
   offer: string;
-  link: string; // Added link for redirection
+  link: string; 
 };
 
 const slides: Slide[] = [
@@ -64,7 +66,6 @@ const PageBreakerSlider: React.FC = () => {
               className="relative w-full h-full cursor-pointer group"
               onClick={() => handleNavigate(link)}
             >
-              {/* Background Image with subtle zoom on hover */}
               <div className="absolute inset-0 overflow-hidden">
                 <img
                   src={image}
@@ -73,13 +74,11 @@ const PageBreakerSlider: React.FC = () => {
                 />
               </div>
 
-              {/* Dark Overlay - Adjusted to match your Royal theme */}
               <div className="absolute inset-0 bg-black/50 backdrop-blur-[1px]"></div>
 
               {/* Content Wrapper */}
               <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-white px-6 md:px-12 max-w-5xl mx-auto z-10">
                 
-                {/* Logo with fade-in */}
                 <motion.img
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
@@ -90,7 +89,6 @@ const PageBreakerSlider: React.FC = () => {
                   loading="lazy"
                 />
 
-                {/* Subtitle */}
                 <motion.p 
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
@@ -100,7 +98,6 @@ const PageBreakerSlider: React.FC = () => {
                   {subtitle}
                 </motion.p>
 
-                {/* Offer Heading */}
                 <motion.h2 
                   initial={{ opacity: 0, scale: 0.9 }}
                   whileInView={{ opacity: 1, scale: 1 }}
@@ -118,7 +115,7 @@ const PageBreakerSlider: React.FC = () => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={(e) => {
-                    e.stopPropagation(); // Prevents double routing
+                    e.stopPropagation(); 
                     handleNavigate(link);
                   }}
                   className="group relative border border-[#D4AF37] px-10 py-4 uppercase tracking-[0.2em] text-sm font-bold overflow-hidden"

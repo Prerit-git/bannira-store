@@ -187,25 +187,16 @@ export default function CartPage() {
         </div>
       </div>
 
-      {/* ================= FIXED SHIPPING PROGRESS OVERLAY (APP FEEL) ================= */}
       <AnimatePresence>
         {cart.length > 0 && showProgress && (
           <motion.div 
             initial={{ y: 100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 100, opacity: 0 }}
-            // Mobile par ye checkout bar ke upar rahega, Desktop par bottom left
             className="fixed bottom-[88px] md:bottom-10 left-0 md:left-10 right-0 md:right-auto z-[60] w-full md:w-[350px] px-4 md:px-0"
           >
             <div className="bg-white/90 backdrop-blur-xl border border-stone-200 shadow-[0_-10px_40px_rgba(0,0,0,0.08)] md:shadow-2xl rounded-t-3xl md:rounded-3xl p-5 md:p-6 overflow-hidden relative">
-              {/* Progress Bar Background Accent */}
-              {/* <div className="absolute top-0 left-0 h-1 w-full bg-stone-100">
-                <motion.div 
-                    initial={{ width: 0 }}
-                    animate={{ width: `${progressPercentage}%` }}
-                    className={`h-full ${subtotal >= freeShippingThreshold ? 'bg-green-500' : 'bg-[#7B2D0A]'}`}
-                />
-              </div> */}
+             
 
               <div className="flex items-center justify-between mb-3 pt-2">
                 <div className="flex items-center gap-3">
@@ -228,7 +219,6 @@ export default function CartPage() {
                 </button>
               </div>
 
-              {/* Mini Progress bar inside card for visual re-enforcement */}
               <div className="h-1 w-full bg-stone-100 rounded-full overflow-hidden">
                 <motion.div 
                     initial={{ width: 0 }} 
@@ -241,7 +231,6 @@ export default function CartPage() {
         )}
       </AnimatePresence>
 
-      {/* --- MOBILE STICKY CHECKOUT BAR --- */}
       <AnimatePresence>
         {cart.length > 0 && (
           <motion.div 

@@ -17,7 +17,7 @@ type Slide = {
   cta?: string;
   showContent?: boolean;
   overlay?: boolean;
-  link: string; // Added link property to the type
+  link: string;
 };
 
 /* ================= DATA ================= */
@@ -59,10 +59,9 @@ const slides: Slide[] = [
   },
 ];
 
-/* ================= COMPONENT ================= */
 const HeroSection = () => {
   const [current, setCurrent] = useState(0);
-  const router = useRouter(); // Initialize router
+  const router = useRouter(); 
 
   const handleRedirection = (link: string) => {
     router.push(link);
@@ -80,7 +79,6 @@ const HeroSection = () => {
 
   return (
     <section className="relative min-h-screen overflow-hidden">
-      {/* ================= IMAGE & OVERLAY (CLICKABLE) ================= */}
       <AnimatePresence mode="wait">
         <motion.div
           key={current}
@@ -88,8 +86,8 @@ const HeroSection = () => {
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 1 }}
-          className="absolute inset-0 cursor-pointer" // Added cursor-pointer
-          onClick={() => handleRedirection(slide.link)} // Click on banner redirects
+          className="absolute inset-0 cursor-pointer" 
+          onClick={() => handleRedirection(slide.link)} 
         >
           <picture>
             {slide.mobileImage && <source media="(max-width: 768px)" srcSet={slide.mobileImage} />}
@@ -115,8 +113,6 @@ const HeroSection = () => {
       {/* ================= CONTENT ================= */}
       {slide.showContent !== false && (
         <div className="relative z-10 min-h-screen flex items-center justify-center text-center px-6 pointer-events-none">
-          {/* pointer-events-none allows clicks to pass through to the image, 
-              but we will re-enable them for the CTA button specifically */}
           <AnimatePresence mode="wait">
             <motion.div
               key={current}
@@ -124,7 +120,7 @@ const HeroSection = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -40 }}
               transition={{ duration: 0.8, ease: "easeOut" }}
-              className="max-w-2xl pointer-events-auto" // Re-enable pointer events for text area
+              className="max-w-2xl pointer-events-auto"
             >
               {slide.discount && (
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="mb-4">
@@ -157,7 +153,7 @@ const HeroSection = () => {
                   whileHover={{ scale: 1.05, boxShadow: "0 0 25px rgba(212,175,55,0.5)" }}
                   whileTap={{ scale: 0.95 }}
                   onClick={(e) => {
-                    e.stopPropagation(); // Prevents double-triggering since parent is also clickable
+                    e.stopPropagation(); 
                     handleRedirection(slide.link);
                   }}
                   className="relative px-8 py-3 border border-[#D4AF37] text-[#F3E1B6] overflow-hidden group cursor-pointer"
@@ -182,7 +178,6 @@ const HeroSection = () => {
         <ChevronRight size={32} />
       </button>
 
-      {/* ================= DOTS ================= */}
       <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex gap-3 z-20">
         {slides.map((_, i) => (
           <button

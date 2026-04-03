@@ -25,7 +25,6 @@ export const WishlistProvider = ({ children }: { children: React.ReactNode }) =>
     localStorage.setItem("bannira_wishlist", JSON.stringify(wishlist));
   }, [wishlist]);
 
-  // Simple Toggle: No size needed here
   const toggleWishlist = (product: Product) => {
     setWishlist((prev) => {
       const isExist = prev.find((item) => item.id === product.id);

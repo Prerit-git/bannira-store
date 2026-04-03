@@ -39,13 +39,11 @@ useEffect(() => {
     );
   }
 
-  // --- VIEW 1: PREMIUM APP LIST VIEW ---
   if (!selectedOrder) {
     return (
       <div className="min-h-screen bg-[#FDFCFB] pb-32 pt-30 md:pt-40">
         <div className="max-w-5xl mx-auto px-4 md:px-6">
           
-          {/* APP HEADER */}
           <div className="flex items-center mb-8">
             <button onClick={()=> router.back()} className="p-3 bg-stone-50 rounded-full text-stone-900">
             <ChevronLeft size={20} />
@@ -55,7 +53,6 @@ useEffect(() => {
             </div>
           </div>
 
-          {/* APP-STYLE TABS */}
           <div className="flex gap-2 mb-8 bg-stone-100 p-1.5 rounded-[1.2rem]">
             {['active', 'completed'].map((tab) => (
               <button 
@@ -68,7 +65,6 @@ useEffect(() => {
             ))}
           </div>
 
-          {/* ORDERS CARDS */}
           <div className="space-y-5">
             {ordersList.map((order) => (
               <motion.div 
@@ -111,12 +107,10 @@ useEffect(() => {
     );
   }
 
-  // --- VIEW 2: FULL APP TRACKING VIEW ---
   return (
     <div className="min-h-screen bg-white pb-20 pt-30 md:pt-40">
       <div className="max-w-5xl mx-auto px-4">
         
-        {/* APP NAV */}
         <div className="flex items-center justify-between mb-8 sticky top-12 bg-white/80 backdrop-blur-lg z-20 py-2">
           <button onClick={() => setSelectedOrder(null)} className="p-3 bg-stone-50 rounded-full text-stone-900">
             <ChevronLeft size={20} />
@@ -125,7 +119,6 @@ useEffect(() => {
           <button className="p-3 bg-stone-50 rounded-full text-stone-900"><Info size={20} /></button>
         </div>
 
-        {/* STATUS BANNER */}
         <div className="bg-[#1C1C1C] rounded-[2.5rem] p-8 text-white mb-8 shadow-2xl relative overflow-hidden">
            <div className="absolute top-0 right-0 w-32 h-32 bg-[#D4AF37]/20 blur-3xl" />
            <div className="flex flex-col gap-1 relative z-10">
@@ -134,7 +127,6 @@ useEffect(() => {
               <div className="h-1.5 w-full bg-white/10 rounded-full mt-6 overflow-hidden">
                  <motion.div initial={{ width: 0 }} animate={{ width: '40%' }} className="h-full bg-[#D4AF37]" />
               </div>
-              {/* <p className="text-[9px] font-bold text-stone-500 uppercase tracking-widest mt-3">Current Location: Delhi Atelier</p> */}
            </div>
         </div>
 
@@ -152,7 +144,6 @@ useEffect(() => {
               </div>
            </div>
 
-           {/* MINI ADDRESS CARD */}
            <div className="bg-white rounded-3xl p-6 border border-stone-100 flex items-start gap-4">
               <div className="p-3 bg-stone-50 rounded-2xl"><MapPin size={20} className="text-[#7B2D0A]" /></div>
               <div>
@@ -163,7 +154,6 @@ useEffect(() => {
            </div>
         </div>
 
-        {/* FLOATING ACTION FOOTER (MOBILE ONLY) */}
         <div className="fixed bottom-8 left-4 right-4 md:hidden z-50">
            <button className="w-full bg-black text-[#D4AF37] py-5 rounded-2xl font-black uppercase text-[10px] tracking-[0.3em] shadow-2xl active:scale-95 transition-all">
               Contact us
@@ -175,7 +165,6 @@ useEffect(() => {
   );
 }
 
-// --- APP HELPERS ---
 function TrackingPoint({ title, time, desc, active = false, done = false, isCurrent = false }: any) {
   return (
     <div className="flex gap-6 relative z-10">

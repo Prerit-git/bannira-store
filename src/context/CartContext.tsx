@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react"; // Added useCallback
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 
 interface CartItem {
   id: string;
@@ -100,9 +100,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     setCart((prev) => prev.filter((item) => !(item.id === id && item.size === size)));
   };
 
-  // ==========================================
-  // FIX: wrap clearCart in useCallback
-  // ==========================================
+  
   const clearCart = useCallback(() => {
     setCart([]);
     setAppliedCoupon(null);

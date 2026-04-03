@@ -150,10 +150,8 @@ export default function ProductDetails() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-10 xl:gap-16 items-start">
-          {/* LEFT: IMAGE GALLERY remains same */}
-          {/* LEFT: IMAGE GALLERY */}
+          
           <div className="lg:col-span-7 flex flex-col-reverse md:flex-row gap-4">
-            {/* Desktop Side Thumbnails (Visible only on md+) */}
             <div className="flex md:flex-col gap-3 overflow-y-auto no-scrollbar max-h-[700px] px-4 md:px-0">
               {images.map((img, idx) => (
                 <button
@@ -170,9 +168,7 @@ export default function ProductDetails() {
               ))}
             </div>
 
-            {/* Main Image Container */}
             <div className="relative w-full md:flex-1 aspect-[4/5] md:aspect-[3/4] bg-white overflow-hidden md:rounded-sm shadow-sm">
-              {/* --- MOBILE: Horizontal Snap Slider --- */}
               <div className="hidden h-full overflow-x-auto snap-x snap-mandatory no-scrollbar">
                 {images.map((img, idx) => (
                   <div key={idx} className="min-w-full h-full snap-center">
@@ -184,7 +180,6 @@ export default function ProductDetails() {
                   </div>
                 ))}
 
-                {/* Mobile Image Indicator (Dots) */}
                 <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
                   {images.map((_, idx) => (
                     <div
@@ -195,7 +190,6 @@ export default function ProductDetails() {
                 </div>
               </div>
 
-              {/* --- DESKTOP: Animated Main Image --- */}
               <div className="block h-full">
                 <AnimatePresence mode="wait">
                   <motion.img
@@ -351,7 +345,6 @@ export default function ProductDetails() {
           </AnimatePresence>
         </div>
 
-        {/* Empty State Fallback */}
         {similarProducts.length === 0 && (
           <div className="py-20 text-center border border-dashed border-stone-200 rounded-3xl">
             <p className="text-sm font-serif italic text-stone-400">Discovering more pieces from this collection...</p>
