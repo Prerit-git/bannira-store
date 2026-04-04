@@ -6,7 +6,7 @@ import Navbar from "@/components/Navbar";
 import { WishlistProvider } from "@/context/WishlistContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { CartProvider } from "@/context/CartContext";
-import LoginStickyBar from "@/components/LoginStickyBar";
+// import LoginStickyBar from "@/components/LoginStickyBar";
 import ScrollToTop from "@/components/ScrollToTop";
 import LayoutWrapper from "@/components/LayoutWrapper";
 
@@ -44,7 +44,7 @@ export default function RootLayout({
         <LayoutWrapper>
         {children}
         </LayoutWrapper>
-        <LoginStickyBar />
+        {/* <LoginStickyBar /> */}
         <Footer/>
         </WishlistProvider>
         </CartProvider>

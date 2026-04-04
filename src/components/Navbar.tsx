@@ -84,9 +84,9 @@ export default function Navbar({ isBarVisible = true }: NavbarProps) {
   const isHome = pathname === "/";
   const navbarBg = isHome
     ? scrolled
-      ? "bg-black/80 backdrop-blur-md shadow-md pt-5 md:pt-4"
+      ? "bg-[#7B2D0A] backdrop-blur-md shadow-md pt-5 md:pt-4"
       : "bg-transparent py-4"
-    : "bg-black/90 backdrop-blur-md shadow-md pt-5 md:pt-4";
+    : "bg-[#7B2D0A] backdrop-blur-md shadow-md pt-5 md:pt-4";
 
   return (
     <>

@@ -2,7 +2,6 @@
 
 import { motion } from "framer-motion";
 import { Sparkles, Truck, Star } from "lucide-react";
-import Link from "next/link";
 
 const announcements = [
   { text: "FREE SHIPPING ON ALL ORDERS ABOVE ₹4999", icon: <Truck size={14} /> },
@@ -15,7 +14,7 @@ const AnnouncementBar = () => {
   const scrollingContent = [...announcements, ...announcements];
 
   return (
-    <div className="fixed top-0 left-0 w-full z-[100] bg-[#1C1C1C] overflow-hidden border-b border-white/5 h-10 flex items-center">
+    <div className="fixed top-0 left-0 w-full z-[100] bg-[#7B2D0A] overflow-hidden border-b border-white/5 h-10 flex items-center">
       <motion.div
         className="flex whitespace-nowrap"
         animate={{

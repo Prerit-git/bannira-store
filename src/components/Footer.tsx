@@ -1,9 +1,12 @@
 "use client";
 
 import React from "react";
+import SignInStrip from "./SignInStrip";
 
 const Footer: React.FC = () => {
   return (
+    <>
+    <SignInStrip/>
     <footer className="bg-[#1a1a1a] text-gray-300 py-16 px-6 md:px-16">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12">
         <div>
@@ -119,6 +122,7 @@ const Footer: React.FC = () => {
         &copy; {new Date().getFullYear()} Bannira. All rights reserved.
       </div>
     </footer>
+    </>
   );
 };
 
