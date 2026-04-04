@@ -1,6 +1,6 @@
 "use client";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Check, Ruler } from "lucide-react";
+import { X, Check, ArrowRight } from "lucide-react";
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 
@@ -10,19 +10,32 @@ interface SizeModalProps {
   onConfirm: (size: string) => void;
   productName: string;
   availableSizes: string[];
+  initialSize?: string;
 }
 
-export default function SizeSelectionModal({ isOpen, onClose, onConfirm, productName, availableSizes }: SizeModalProps) {
+export default function SizeSelectionModal({ 
+  isOpen, 
+  onClose, 
+  onConfirm, 
+  productName, 
+  availableSizes,
+  initialSize 
+}: SizeModalProps) {
   const allSizes = ["S", "M", "L", "XL", "XXL"];
   const [tempSize, setTempSize] = useState("");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    if (isOpen) document.body.style.overflow = "hidden";
-    else document.body.style.overflow = "unset";
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+      if (initialSize) setTempSize(initialSize);
+    }
+    else {
+      document.body.style.overflow = "unset";
+    }
     return () => { document.body.style.overflow = "unset"; };
-  }, [isOpen]);
+  }, [isOpen, initialSize]);
 
   if (!mounted || !isOpen) return null;
 
@@ -43,9 +56,6 @@ export default function SizeSelectionModal({ isOpen, onClose, onConfirm, product
         transition={{ type: "spring", damping: 20, stiffness: 300 }}
         className="bg-white w-full max-w-md rounded-[3rem] overflow-hidden relative z-[10000] shadow-[0_30px_100px_rgba(0,0,0,0.25)] border border-stone-100"
       >
-        {/* Top Decorative Bar */}
-        {/* <div className="h-2 w-full bg-gradient-to-r from-[#7B2D0A] via-[#D4AF37] to-[#7B2D0A]" /> */}
-
         <button 
           onClick={onClose} 
           className="absolute top-8 right-8 text-stone-300 hover:text-stone-900 transition-all duration-300 hover:rotate-90"
@@ -62,18 +72,22 @@ export default function SizeSelectionModal({ isOpen, onClose, onConfirm, product
               className="inline-flex items-center gap-2 mb-3"
             >
               <div className="h-px w-6 bg-[#D4AF37]" />
-              <p className="text-[10px] font-bold uppercase tracking-[0.5em] text-[#7B2D0A]">The Perfect Fit</p>
+              <p className="text-[10px] font-bold uppercase tracking-[0.5em] text-[#7B2D0A]">
+                {initialSize ? "Update Your Fit" : "The Perfect Fit"}
+              </p>
               <div className="h-px w-6 bg-[#D4AF37]" />
             </motion.div>
             
-            <h3 className="text-2xl md:text-3xl font-serif text-stone-900 mb-2 leading-tight">Please select your fit</h3>
+            <h3 className="text-2xl md:text-3xl font-serif text-stone-900 mb-2 leading-tight">
+              {initialSize ? "Change your selection" : "Please select your fit"}
+            </h3>
             <p className="text-stone-400 text-[11px] font-medium uppercase tracking-widest italic">{productName}</p>
           </header>
 
-          {/* Size Selection Grid */}
           <div className="grid grid-cols-3 gap-4 mb-10">
             {allSizes.map((size, index) => {
               const isAvailable = availableSizes.includes(size);
+              const isCurrent = size === initialSize;
               return (
                 <motion.button
                   key={size}
@@ -95,7 +109,7 @@ export default function SizeSelectionModal({ isOpen, onClose, onConfirm, product
                       layoutId="checkIcon"
                       className="absolute top-1 right-1"
                     >
-                      <Check size={12} className="text-[#D4AF37]" />
+                      <Check size={12} className={isCurrent ? "text-green-400" : "text-[#D4AF37]"} />
                     </motion.div>
                   )}
                   {size}
@@ -104,7 +118,6 @@ export default function SizeSelectionModal({ isOpen, onClose, onConfirm, product
             })}
           </div>
 
-          {/* Action Button */}
           <motion.button 
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
@@ -112,15 +125,19 @@ export default function SizeSelectionModal({ isOpen, onClose, onConfirm, product
               onConfirm(tempSize);
               setTempSize(""); 
             }}
-            disabled={!tempSize}
+            disabled={!tempSize || tempSize === initialSize}
             className={`w-full py-5 rounded-2xl font-bold uppercase text-[11px] tracking-[0.3em] transition-all duration-500 flex items-center justify-center gap-3 shadow-xl cursor-pointer
-              ${tempSize 
-                ? "bg-[#7B2D0A] text-white shadow-stone-200" 
-                : "bg-stone-100 text-stone-400 cursor-not-allowed"
+              ${(!tempSize || tempSize === initialSize)
+                ? "bg-stone-100 text-stone-400 cursor-not-allowed"
+                : "bg-[#7B2D0A] text-white shadow-stone-200"
               }`}
           >
-            {tempSize ? (
-              <span className="flex items-center gap-2">Confirm {tempSize} <ArrowIcon /></span>
+            {tempSize === initialSize ? (
+              "Already Selected"
+            ) : tempSize ? (
+              <span className="flex items-center gap-2">
+                {initialSize ? "Update Bag" : `Confirm ${tempSize}`} <ArrowRight size={16}/>
+              </span>
             ) : "Pick your size"}
           </motion.button>
 
@@ -133,9 +150,3 @@ export default function SizeSelectionModal({ isOpen, onClose, onConfirm, product
     document.body
   );
 }
-
-const ArrowIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M5 12h14m-7-7 7 7-7 7"/>
-  </svg>
-);

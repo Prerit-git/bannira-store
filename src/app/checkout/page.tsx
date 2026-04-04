@@ -307,17 +307,20 @@ export default function CheckoutPage() {
                 onClick={() => setIsSummaryExpanded(!isSummaryExpanded)}
                 className="w-full flex items-center justify-between mb-8 group border-b border-white/10 pb-4"
               >
-                <p className="text-sm font-bold uppercase tracking-widest">
+                <p className="text-sm font-bold uppercase tracking-widest flex items-center gap-1">
                   Order Review
+                  <span>
+
+                  <ChevronDown
+                    size={16}
+                    className={`transition-transform ${isSummaryExpanded ? "rotate-180" : ""}`}
+                  />
+                  </span>
                 </p>
                 <div className="flex items-center gap-2 text-stone-400 group-hover:text-white transition-colors">
                   <span className="text-[10px] font-bold uppercase">
                     {cart.length} Items
                   </span>
-                  <ChevronDown
-                    size={16}
-                    className={`transition-transform ${isSummaryExpanded ? "rotate-180" : ""}`}
-                  />
                 </div>
               </button>
 
@@ -362,16 +365,16 @@ export default function CheckoutPage() {
                 <SummaryRow label="Bag Subtotal" value={subtotal} />
                 {discount > 0 && (
                   <SummaryRow
-                    label={`Privilege Discount`}
+                    label={`Coupon Discount`}
                     value={-discount}
                     isDiscount
                   />
                 )}
                 <SummaryRow
-                  label="Delivery"
+                  label="Delivery Charges"
                   value={shipping === 0 ? "FREE" : shipping}
                 />
-                <SummaryRow label="Estimated Tax (12%)" value={tax} />
+                <SummaryRow label="Total Tax" value={tax} />
 
                 <div className="h-px bg-white/10 my-6" />
 

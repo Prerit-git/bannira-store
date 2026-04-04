@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useCart } from "@/context/CartContext";
 import { motion, AnimatePresence } from "framer-motion";
-import { Minus, Plus, Trash2, ArrowRight, ShoppingBag, ShieldCheck, ChevronLeft, Tag, Check, Truck, X } from "lucide-react";
+import { Minus, Plus, Trash2, ArrowRight, ShoppingBag, ChevronLeft, Tag, Check, Truck, X, AlertCircle, Sparkles, XCircle } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -22,6 +23,13 @@ export default function CartPage() {
   const router = useRouter();
   const [couponInput, setCouponInput] = useState("");
   const [showProgress, setShowProgress] = useState(true);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; size: string; name: string } | null>(null);
+  const [couponStatus, setCouponStatus] = useState<"idle" | "success" | "invalid">("idle");
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const subtotal = totalPrice;
   const freeShippingThreshold = 5000;
@@ -35,7 +43,18 @@ export default function CartPage() {
   const handleApplyCoupon = (e: React.FormEvent) => {
     e.preventDefault();
     const success = applyCoupon(couponInput);
-    if (!success) alert("Invalid Coupon Code. Try BANNIRA10");
+    if (success) {
+      setCouponStatus("success");
+    } else {
+      setCouponStatus("invalid");
+    }
+  };
+
+  const confirmDelete = () => {
+    if (deleteTarget) {
+      removeFromCart(deleteTarget.id, deleteTarget.size);
+      setDeleteTarget(null);
+    }
   };
 
   if (cart.length === 0) {
@@ -56,7 +75,6 @@ export default function CartPage() {
     <div className="min-h-screen bg-white pt-30 md:pt-40 pb-40">
       <div className="max-w-[1200px] mx-auto px-6 md:px-10">
         
-        {/* --- HEADER --- */}
         <header className="mb-0 md:mb-3 flex items-center justify-between border-b border-stone-100 pb-8">
           <div className="flex items-center gap-4">
             <button onClick={() => router.back()} className="p-2 -ml-2 hover:bg-stone-50 rounded-full transition-colors cursor-pointer">
@@ -71,7 +89,6 @@ export default function CartPage() {
 
         <div className="flex flex-col lg:flex-row gap-16">
           
-          {/* --- LEFT: PRODUCT LIST --- */}
           <div className="flex-1">
             <AnimatePresence mode="popLayout">
               {cart.map((item) => (
@@ -81,7 +98,7 @@ export default function CartPage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, x: -20 }}
-                  className="flex gap-6 md:gap-10 py-10 border-b border-stone-100 group last:border-0"
+                  className="flex gap-6 md:gap-8 py-5 border-b border-stone-100 group last:border-0"
                 >
                   <Link href={`/products/${item.id}`} className="w-24 md:w-36 aspect-[3/4] bg-[#F9F9F9] shrink-0 overflow-hidden cursor-pointer rounded-sm shadow-sm">
                     <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
@@ -91,7 +108,7 @@ export default function CartPage() {
                     <div className="flex justify-between items-start">
                       <div className="space-y-1">
                         <Link href={`/products/${item.id}`}>
-                          <h3 className="text-lg md:text-xl font-medium text-stone-900 tracking-tight hover:text-[#7B2D0A] transition-colors">
+                          <h3 className="text-md md:text-lg font-medium text-stone-900 hover:text-[#7B2D0A] transition-colors leading-tight">
                             {item.name}
                           </h3>
                         </Link>
@@ -101,7 +118,7 @@ export default function CartPage() {
                           <span>Price: ₹{item.price.toLocaleString()}</span>
                         </div>
                       </div>
-                      <button onClick={() => removeFromCart(item.id, item.size)} className="p-2 text-stone-300 hover:text-red-500 transition-colors cursor-pointer rounded-full hover:bg-red-50">
+                      <button onClick={() => setDeleteTarget({ id: item.id, size: item.size, name: item.name })} className="p-2 text-stone-300 hover:text-red-500 transition-colors cursor-pointer rounded-full hover:bg-red-50">
                         <Trash2 size={18} strokeWidth={1.5} />
                       </button>
                     </div>
@@ -129,7 +146,6 @@ export default function CartPage() {
             </AnimatePresence>
           </div>
 
-          {/* --- RIGHT: SUMMARY SIDEBAR --- */}
           <aside className="w-full lg:w-[400px] space-y-6">
             <div className="bg-white border border-stone-200 p-8 rounded-[2rem] shadow-sm">
                <div className="flex items-center gap-3 mb-6">
@@ -166,12 +182,12 @@ export default function CartPage() {
                   </div>
                 )}
                 <div className="flex justify-between text-[11px] font-bold uppercase tracking-widest text-stone-400">
-                  <span>Estimated Tax</span>
+                  <span>Total Tax</span>
                   <span className="text-stone-900">₹{tax.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between text-[11px] font-bold uppercase tracking-widest text-stone-400">
                   <span>Shipping</span>
-                  <span className={`${shipping === 0 ? "text-green-600" : "text-[#7B2D0A]"}`}>{shipping === 0 ? "Complimentary" : `₹${shipping}`}</span>
+                  <span className={`${shipping === 0 ? "text-green-600" : "text-[#7B2D0A]"}`}>{shipping === 0 ? "Free" : `₹${shipping}`}</span>
                 </div>
                 <div className="h-px bg-stone-200 my-8" />
                 <div className="flex justify-between items-baseline pt-2">
@@ -196,8 +212,6 @@ export default function CartPage() {
             className="fixed bottom-[88px] md:bottom-10 left-0 md:left-10 right-0 md:right-auto z-[60] w-full md:w-[350px] px-4 md:px-0"
           >
             <div className="bg-white/90 backdrop-blur-xl border border-stone-200 shadow-[0_-10px_40px_rgba(0,0,0,0.08)] md:shadow-2xl rounded-t-3xl md:rounded-3xl p-5 md:p-6 overflow-hidden relative">
-             
-
               <div className="flex items-center justify-between mb-3 pt-2">
                 <div className="flex items-center gap-3">
                     <div className={`p-2 rounded-full ${subtotal >= freeShippingThreshold ? 'bg-green-100 text-green-600' : 'bg-stone-100 text-[#7B2D0A]'}`}>
@@ -249,6 +263,101 @@ export default function CartPage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {mounted && createPortal(
+        <AnimatePresence>
+          {deleteTarget && (
+            <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setDeleteTarget(null)}
+                className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              />
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                className="relative bg-white w-full max-w-sm rounded-[2.5rem] overflow-hidden shadow-2xl p-8 text-center"
+              >
+                <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <AlertCircle size={32} />
+                </div>
+                <h3 className="text-xl font-serif text-stone-900 mb-2">Wait, are you sure?</h3>
+                <p className="text-sm text-stone-500 mb-8 leading-relaxed">Do you really want to let go of this beautiful <span className="font-bold text-stone-800">{deleteTarget.name}</span>? It would look amazing on you!</p>
+                <div className="flex flex-col gap-3">
+                  <button
+                    onClick={confirmDelete}
+                    className="w-full py-4 bg-[#7B2D0A] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-red-500/20 active:scale-95 transition-all"
+                  >
+                    Yes, Remove it
+                  </button>
+                  <button
+                    onClick={() => setDeleteTarget(null)}
+                    className="w-full py-4 bg-stone-100 text-stone-600 rounded-2xl text-[10px] font-black uppercase tracking-widest active:scale-95 transition-all"
+                  >
+                    No, keep it
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+
+          {couponStatus !== "idle" && (
+            <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setCouponStatus("idle")}
+                className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              />
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                className="relative bg-white w-full max-w-sm rounded-[2.5rem] overflow-hidden shadow-2xl p-8 text-center"
+              >
+                {couponStatus === "success" ? (
+                  <>
+                    <div className="w-16 h-16 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <Sparkles size={32} />
+                    </div>
+                    <h3 className="text-xl font-serif text-stone-900 mb-2">Offer Applied!</h3>
+                    <p className="text-sm text-stone-500 mb-6 leading-relaxed">
+                      Congratulations! You just saved <span className="font-bold text-stone-900">₹{discount.toLocaleString()}</span> on your order.
+                    </p>
+                    <button
+                      onClick={() => setCouponStatus("idle")}
+                      className="w-full py-4 bg-black text-white rounded-2xl text-[10px] font-black uppercase tracking-widest active:scale-95 transition-all"
+                    >
+                      Continue
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <XCircle size={32} />
+                    </div>
+                    <h3 className="text-xl font-serif text-stone-900 mb-2">Invalid Code</h3>
+                    <p className="text-sm text-stone-500 mb-6 leading-relaxed">
+                      Oops! That code doesn't exist. Please try again
+                    </p>
+                    <button
+                      onClick={() => setCouponStatus("idle")}
+                      className="w-full py-4 bg-stone-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest active:scale-95 transition-all"
+                    >
+                      Try Again
+                    </button>
+                  </>
+                )}
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </div>
   );
 }

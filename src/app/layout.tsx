@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Libre_Baskerville, Poppins } from "next/font/google";
-import ClientWrapper from "./ClientWrapper";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import { WishlistProvider } from "@/context/WishlistContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { CartProvider } from "@/context/CartContext";
+import LoginStickyBar from "@/components/LoginStickyBar";
+import ScrollToTop from "@/components/ScrollToTop";
+import LayoutWrapper from "@/components/LayoutWrapper";
 
 const libre = Libre_Baskerville({
   subsets: ["latin"],
@@ -37,11 +39,13 @@ export default function RootLayout({
         <AuthProvider>
           <CartProvider>
         <WishlistProvider>
-        <ClientWrapper>
-        <Navbar/>
+        {/* <Navbar/> */}
+        <ScrollToTop/>
+        <LayoutWrapper>
         {children}
+        </LayoutWrapper>
+        <LoginStickyBar />
         <Footer/>
-        </ClientWrapper>
         </WishlistProvider>
         </CartProvider>
         </AuthProvider>

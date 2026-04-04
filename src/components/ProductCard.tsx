@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { Heart, ShoppingBag, X, Check, ArrowRight, CheckCircle2 } from "lucide-react";
+import { Heart, ShoppingBag, X, Check, ArrowRight, CheckCircle2, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Product } from "@/data/products";
@@ -31,6 +31,7 @@ const ProductCard = ({ product, onAddToCartSuccess }: ProductCardProps) => {
   const [showModal, setShowModal] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [showRemoveConfirm, setShowRemoveConfirm] = useState(false);
 
   const isLowStock = product.inStock && quantity > 0 && quantity <= 5;
   const isOutOfStock = !product.inStock || quantity === 0;
@@ -38,7 +39,6 @@ const ProductCard = ({ product, onAddToCartSuccess }: ProductCardProps) => {
   const isAlreadyInCart = cart.some((item) => item.id === id);
   const discount = originalPrice ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0;
 
-  // Check if we are on the wishlist page
   const isWishlistPage = pathname === "/wishlist";
 
   useEffect(() => {
@@ -53,7 +53,17 @@ const ProductCard = ({ product, onAddToCartSuccess }: ProductCardProps) => {
       router.push("/login");
       return;
     }
+    
+    if (active) {
+      setShowRemoveConfirm(true);
+    } else {
+      toggleWishlist(product);
+    }
+  };
+
+  const confirmRemove = () => {
     toggleWishlist(product);
+    setShowRemoveConfirm(false);
   };
 
   const handleCartClick = (e: React.MouseEvent) => {
@@ -101,7 +111,6 @@ const ProductCard = ({ product, onAddToCartSuccess }: ProductCardProps) => {
           setCurrentIndex(0);
         }}
       >
-        {/* IMAGE SECTION */}
         <div className="relative aspect-[3/4] overflow-hidden bg-[#F9F9F9]">
           <Link href={`/products/${id}`} className="block h-full">
             <img
@@ -129,7 +138,6 @@ const ProductCard = ({ product, onAddToCartSuccess }: ProductCardProps) => {
           </button>
         </div>
 
-        {/* CONTENT AREA */}
         <div className="p-5 flex flex-col min-h-[180px]">
           <p className="text-[9px] tracking-[0.2em] uppercase text-stone-400 font-bold mb-1 font-poppins">{category}</p>
           <Link href={`/products/${id}`}>
@@ -154,6 +162,49 @@ const ProductCard = ({ product, onAddToCartSuccess }: ProductCardProps) => {
           </button>
         </div>
       </div>
+
+      {mounted && createPortal(
+        <AnimatePresence>
+          {showRemoveConfirm && (
+            <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setShowRemoveConfirm(false)}
+                className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              />
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                className="relative bg-white w-full max-w-sm rounded-[2.5rem] overflow-hidden shadow-2xl p-8 text-center"
+              >
+                <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <AlertCircle size={32} />
+                </div>
+                <h3 className="text-xl font-serif text-stone-900 mb-2">Remove from Wishlist?</h3>
+                <p className="text-sm text-stone-500 mb-8 leading-relaxed">Are you sure you want to remove <span className="font-bold text-stone-800">{name}</span> from your favorites?</p>
+                <div className="flex flex-col gap-3">
+                  <button
+                    onClick={confirmRemove}
+                    className="w-full py-4 bg-[#7B2D0A] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-red-500/20 active:scale-95 transition-all"
+                  >
+                    Yes, Remove
+                  </button>
+                  <button
+                    onClick={() => setShowRemoveConfirm(false)}
+                    className="w-full py-4 bg-stone-100 text-stone-600 rounded-2xl text-[10px] font-black uppercase tracking-widest active:scale-95 transition-all"
+                  >
+                    No, Keep it
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
 
       {mounted && !isWishlistPage && createPortal(
         <AnimatePresence>
