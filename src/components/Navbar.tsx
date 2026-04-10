@@ -43,7 +43,7 @@ export default function Navbar({ isBarVisible = true }: NavbarProps) {
   const router = useRouter();
   const { wishlist } = useWishlist();
   const { cart } = useCart();
-  const { isLoggedIn, logout, setRedirectPath, userPhone } = useAuth();
+  const { isLoggedIn, logout, setRedirectPath, user } = useAuth();
 
   const wishlistCount = wishlist.length;
   const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
@@ -57,8 +57,7 @@ export default function Navbar({ isBarVisible = true }: NavbarProps) {
   const handleProtectedNavigation = (e: any, path: string) => {
     e.preventDefault();
     if (!isLoggedIn) {
-      setRedirectPath(path);
-      router.push("/login");
+      router.push(`/login?callbackUrl=${encodeURIComponent(path)}`);
     } else {
       router.push(path);
     }
@@ -78,7 +77,6 @@ export default function Navbar({ isBarVisible = true }: NavbarProps) {
   const handleLogout = () => {
     logout();
     setMenuOpen(false);
-    router.push("/");
   };
 
   const isHome = pathname === "/";
@@ -129,7 +127,7 @@ export default function Navbar({ isBarVisible = true }: NavbarProps) {
                 className="text-white group-hover:text-[#D4AF37] transition-colors"
               />
               <span className="text-[10px] uppercase tracking-widest text-white mt-1">
-                Account
+                {isLoggedIn ? user?.name : `Account`}
               </span>
 
               <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-2xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 border border-gray-100 overflow-hidden">
@@ -137,11 +135,14 @@ export default function Navbar({ isBarVisible = true }: NavbarProps) {
                   {isLoggedIn ? (
                     <div className="space-y-1">
                       <div className="pb-3 border-b border-gray-50 mb-2 text-left">
-                        <p className="text-[10px] font-black uppercase text-stone-400 tracking-widest">
-                          Active User
+                        {/* <p className="text-[10px] font-black uppercase text-stone-400 tracking-widest">
+                          Hello,
+                        </p> */}
+                        <p className="text-sm font-bold text-stone-800 truncate">
+                          {user?.name || user?.email}
                         </p>
-                        <p className="text-sm font-bold text-stone-800">
-                          {userPhone}
+                        <p className="text-xs text-stone-600 truncate">
+                          {user?.email}
                         </p>
                       </div>
                       <Link
@@ -282,12 +283,12 @@ export default function Navbar({ isBarVisible = true }: NavbarProps) {
                   <div className="w-10 h-10 bg-stone-900 rounded-full flex items-center justify-center text-[#D4AF37]">
                     <UserCircle size={24} strokeWidth={1.5} />
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <p className="text-[10px] font-black uppercase tracking-widest text-stone-400">
                       Account
                     </p>
-                    <p className="text-xs font-bold text-stone-900">
-                      {isLoggedIn ? userPhone : "Guest User"}
+                    <p className="text-xs font-bold text-stone-900 truncate">
+                      {isLoggedIn ? (user?.name || "Bannira Member") : "Guest User"}
                     </p>
                   </div>
                 </div>
@@ -440,25 +441,6 @@ export default function Navbar({ isBarVisible = true }: NavbarProps) {
         )}
       </AnimatePresence>
     </>
-  );
-}
-
-function ActionTile({ icon, title, subtitle, onClick }: any) {
-  return (
-    <button
-      onClick={onClick}
-      className="bg-white p-5 rounded-[1.8rem] text-left border border-stone-100 shadow-sm active:bg-stone-50 active:scale-95 transition-all flex flex-col gap-3"
-    >
-      <div className="p-2.5 bg-stone-50 rounded-xl w-fit">{icon}</div>
-      <div>
-        <p className="text-[10px] font-black uppercase tracking-widest text-stone-900">
-          {title}
-        </p>
-        <p className="text-[9px] text-stone-400 font-bold uppercase mt-0.5">
-          {subtitle}
-        </p>
-      </div>
-    </button>
   );
 }
 

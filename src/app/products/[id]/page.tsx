@@ -17,9 +17,8 @@ import {
   Check,
   AlertCircle,
   Settings2,
-  X,
 } from "lucide-react";
-import { products, Product } from "@/data/products";
+import Image from "next/image";
 import ProductCard from "@/components/ProductCard";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
@@ -27,8 +26,16 @@ import { useWishlist } from "@/context/WishlistContext";
 import { useAuth } from "@/context/AuthContext";
 import SizeSelectionModal from "@/components/SizeSelectionModal";
 import { createPortal } from "react-dom";
+import { useProducts } from "@/context/ProductContext";
+import ProductSkeleton from "@/components/ProductSkeleton";
+
+const getOptimizedUrl = (url: string) => {
+  if (!url || !url.includes("cloudinary.com")) return url || "/placeholder.jpg";
+  return url.replace("/upload/", "/upload/q_auto,f_auto,w_1000/");
+};
 
 export default function ProductDetails() {
+  const { allProducts, isLoading } = useProducts();
   const { id } = useParams();
   const router = useRouter();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -37,7 +44,6 @@ export default function ProductDetails() {
   const { toggleWishlist, isInWishlist } = useWishlist();
   const { isLoggedIn, setRedirectPath } = useAuth();
 
-  const [product, setProduct] = useState<Product | null>(null);
   const [selectedImage, setSelectedImage] = useState(0);
   const [selectedSize, setSelectedSize] = useState("");
   const [showModal, setShowModal] = useState(false);
@@ -54,40 +60,75 @@ export default function ProductDetails() {
 
   useEffect(() => {
     setMounted(true);
-    const found = products.find((p) => p.id === id);
-    if (found) {
-      setProduct(found);
-      setSelectedImage(0);
-    }
-  }, [id]);
+  }, []);
+
+  const product = useMemo(() => {
+    return allProducts.find((p) => (p.id || p._id) === id);
+  }, [id, allProducts]);
+
+  const similarProducts = useMemo(() => {
+    if (!product) return [];
+    return allProducts
+      .filter(
+        (p) =>
+          p.category === product.category &&
+          (p.id || p._id) !== (product.id || product._id),
+      )
+      .slice(0, 5);
+  }, [product, allProducts]);
 
   const handleScroll = () => {
     if (!scrollRef.current) return;
-    const scrollLeft = scrollRef.current.scrollLeft;
-    const width = scrollRef.current.offsetWidth;
-    const index = Math.round(scrollLeft / width);
-    if (index !== selectedImage) {
-      setSelectedImage(index);
-    }
+    const index = Math.round(
+      scrollRef.current.scrollLeft / scrollRef.current.offsetWidth,
+    );
+    if (index !== selectedImage) setSelectedImage(index);
   };
 
   const scrollToImage = (index: number) => {
     setSelectedImage(index);
-    if (scrollRef.current) {
-      scrollRef.current.scrollTo({
-        left: index * scrollRef.current.offsetWidth,
-        behavior: "smooth",
-      });
-    }
+    scrollRef.current?.scrollTo({
+      left: index * scrollRef.current.offsetWidth,
+      behavior: "smooth",
+    });
   };
 
-  const isOutOfStock = product
-    ? !product.inStock || product.quantity === 0
-    : false;
-  const cartItem = cart.find((item) => item.id === id);
+  if (isLoading) {
+    return <ProductSkeleton />;
+  }
+
+  if (!product) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+        <h2 className="text-2xl font-serif">Product Not Found</h2>
+        <Link
+          href="/products"
+          className="text-[#7B2D0A] font-bold uppercase tracking-widest text-xs underline"
+        >
+          Back to Collection
+        </Link>
+      </div>
+    );
+  }
+
+  // Yahan ID handling fix ki gayi hai
+  const productId = (product.id || product._id) as string;
+  const isOutOfStock = !product.inStock || product.quantity === 0;
+  
+  const cartItem = isLoggedIn
+    ? cart.find((item) => item.id === productId)
+    : null;
+    
   const isAlreadyInCart = !!cartItem;
   const sizeInCart = cartItem?.size || "";
-  const active = product ? isInWishlist(product.id) : false;
+  
+  // TypeScript Error Fixed: Force cast to string
+  const active = isLoggedIn && isInWishlist(productId);
+
+  const images =
+    product.images && product.images.length > 0
+      ? product.images
+      : [product.image];
 
   const handleAddToCart = () => {
     if (isOutOfStock) return;
@@ -96,34 +137,22 @@ export default function ProductDetails() {
       router.push("/login");
       return;
     }
-
-    if (isAlreadyInCart) {
+    if (isAlreadyInCart || !selectedSize) {
       setShowModal(true);
-      return;
-    }
-
-    if (selectedSize) {
-      confirmAddToCart(selectedSize);
     } else {
-      setShowModal(true);
+      confirmAddToCart(selectedSize);
     }
   };
 
   const confirmAddToCart = (size: string) => {
-    if (product) {
-      const isUpdating = isAlreadyInCart;
-      if (isUpdating && cartItem) {
-        removeFromCart(cartItem.id, cartItem.size);
-      }
-      addToCart(product, size);
-
-      setSuccessMessage(isUpdating ? "Bag Updated" : "Added to Bag");
-      setShowSuccess(true);
-      setTimeout(() => setShowSuccess(false), 5000);
-
-      setShowModal(false);
-      setSelectedSize("");
-    }
+    const isUpdating = isAlreadyInCart;
+    if (isUpdating && cartItem) removeFromCart(cartItem.id, cartItem.size);
+    addToCart(product, size);
+    setSuccessMessage(isUpdating ? "Bag Updated" : "Added to Bag");
+    setShowSuccess(true);
+    setTimeout(() => setShowSuccess(false), 5000);
+    setShowModal(false);
+    setSelectedSize("");
   };
 
   const handleWishlistToggle = () => {
@@ -132,13 +161,7 @@ export default function ProductDetails() {
       router.push("/login");
       return;
     }
-    if (active) {
-      setShowRemoveWishlistModal(true);
-    } else {
-      if (product) {
-        toggleWishlist(product);
-      }
-    }
+    active ? setShowRemoveWishlistModal(true) : toggleWishlist(product);
   };
 
   const confirmRemoveWishlist = () => {
@@ -148,19 +171,8 @@ export default function ProductDetails() {
     }
   };
 
-  const similarProducts = useMemo(() => {
-    if (!product) return [];
-    return products
-      .filter((p) => p.category === product.category && p.id !== product.id)
-      .slice(0, 5);
-  }, [product]);
-
-  if (!product) return null;
-
-  const images = product.images || [product.image];
-
   return (
-    <div className="bg-[#FAF9F6] min-h-screen pt-21 md:pt-40 pb-32 md:pb-20 selection:bg-[#7B2D0A] selection:text-white">
+    <div className="bg-[#FAF9F6] min-h-screen pt-21 md:pt-40 pb-32 md:pb-20">
       <motion.div
         style={{ opacity: headerOpacity, y: headerY }}
         className="fixed top-30 inset-x-0 z-[60] bg-white/80 backdrop-blur-md border-b border-gray-100 p-4 md:hidden flex items-center justify-between"
@@ -179,7 +191,7 @@ export default function ProductDetails() {
           className={`${isOutOfStock ? "bg-gray-100 text-gray-400" : isAlreadyInCart ? "bg-black text-white" : "bg-[#7B2D0A] text-white"} px-6 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest shrink-0 shadow-lg`}
         >
           {isOutOfStock
-            ? "Out of Stock"
+            ? "Sold Out"
             : isAlreadyInCart
               ? "Change Size"
               : "Add to bag"}
@@ -187,28 +199,27 @@ export default function ProductDetails() {
       </motion.div>
 
       <div className="max-w-[1440px] mx-auto px-0 md:px-8">
-        <div className="px-4 md:px-0">
-          <button
-            onClick={() => router.back()}
-            className="hidden md:flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] font-bold text-[#7B2D0A] hover:text-[#D4AF37] mb-6 transition-colors"
-          >
-            <ChevronLeft size={14} /> Back to Collection
-          </button>
-        </div>
+        <button
+          onClick={() => router.back()}
+          className="hidden md:flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] font-bold text-[#7B2D0A] hover:text-[#D4AF37] mb-6 px-4 md:px-0 transition-colors"
+        >
+          <ChevronLeft size={14} /> Back to Collection
+        </button>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-10 xl:gap-16 items-start">
           <div className="lg:col-span-7 flex flex-col-reverse md:flex-row gap-4">
             <div className="flex md:flex-col gap-3 overflow-y-auto no-scrollbar max-h-[700px] px-4 md:px-0">
-              {images.map((img, idx) => (
+              {images.map((img: string, idx: number) => (
                 <button
                   key={idx}
                   onClick={() => scrollToImage(idx)}
                   className={`relative flex-shrink-0 w-24 aspect-[3/4] rounded-sm overflow-hidden border-2 transition-all ${selectedImage === idx ? "border-[#7B2D0A]" : "border-transparent opacity-60"}`}
                 >
-                  <img
-                    src={img}
+                  <Image
+                    src={getOptimizedUrl(img)}
                     alt=""
-                    className="w-full h-full object-cover"
+                    fill
+                    className="object-cover"
                   />
                 </button>
               ))}
@@ -220,45 +231,45 @@ export default function ProductDetails() {
                 onScroll={handleScroll}
                 className="flex h-full overflow-x-auto snap-x snap-mandatory no-scrollbar md:hidden"
               >
-                {images.map((img, idx) => (
-                  <div key={idx} className="min-w-full h-full snap-center">
-                    <img
-                      src={img}
-                      alt={`${product.name} ${idx + 1}`}
-                      className="w-full h-full object-cover"
+                {images.map((img: string, idx: number) => (
+                  <div
+                    key={idx}
+                    className="min-w-full h-full snap-center relative"
+                  >
+                    <Image
+                      src={getOptimizedUrl(img)}
+                      alt={product.name}
+                      fill
+                      className="object-cover"
                     />
                   </div>
                 ))}
               </div>
-
-              <div className="hidden md:block h-full">
+              <div className="hidden md:block h-full relative">
                 <AnimatePresence mode="wait">
-                  <motion.img
+                  <motion.div
                     key={selectedImage}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.4 }}
-                    src={images[selectedImage]}
-                    alt={product.name}
-                    className="w-full h-full object-cover"
-                  />
+                    className="h-full w-full"
+                  >
+                    <Image
+                      src={getOptimizedUrl(images[selectedImage])}
+                      alt={product.name}
+                      fill
+                      className="object-cover"
+                      priority
+                    />
+                  </motion.div>
                 </AnimatePresence>
-              </div>
-
-              <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 md:hidden">
-                {images.map((_, idx) => (
-                  <div
-                    key={idx}
-                    className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${selectedImage === idx ? "bg-[#7B2D0A] w-4" : "bg-stone-300"}`}
-                  />
-                ))}
               </div>
             </div>
           </div>
 
           <div className="lg:col-span-5 px-4 md:px-0 lg:sticky lg:top-28">
-            <div className="bg-white p-6 md:p-8 md:border md:border-[#D4AF37]/20 md:shadow-xl md:shadow-[#7B2D0A]/5 space-y-6 md:space-y-8 rounded-2xl md:rounded-sm">
+            <div className="bg-white p-6 md:p-8 md:border md:border-[#D4AF37]/20 md:shadow-xl space-y-6 md:space-y-8 rounded-2xl md:rounded-sm">
               <section>
                 <p className="text-[10px] tracking-[0.4em] uppercase text-[#D4AF37] font-bold mb-2">
                   {product.category}
@@ -266,41 +277,32 @@ export default function ProductDetails() {
                 <h1 className="text-2xl md:text-4xl font-serif text-[#2A1A12] leading-tight mb-3">
                   {product.name}
                 </h1>
-                <div className="flex items-center gap-4">
-                  <span className="text-3xl font-bold text-[#7B2D0A]">
-                    ₹{product.price.toLocaleString()}
-                  </span>
-                </div>
+                <span className="text-3xl font-bold text-[#7B2D0A]">
+                  ₹{product.price.toLocaleString()}
+                </span>
               </section>
 
               <section
                 className={isOutOfStock ? "opacity-50 pointer-events-none" : ""}
               >
-                <div className="flex justify-between items-center mb-4">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">
-                    {isAlreadyInCart ? "Selected Size" : "Select Fit"}
-                  </span>
-                </div>
-                <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2">
+                <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 block mb-4">
+                  {isAlreadyInCart ? "Selected Size" : "Select Fit"}
+                </span>
+                <div className="flex gap-3 flex-wrap">
                   {allSizes.map((size) => {
-                    const isAvailable = product.sizes.includes(size);
+                    const isAvailable = product.sizes?.includes(size);
                     const isInBag = isAlreadyInCart && sizeInCart === size;
                     return (
                       <button
                         key={size}
                         disabled={!isAvailable || isOutOfStock}
                         onClick={() => setSelectedSize(size)}
-                        className={`relative min-w-[56px] h-14 flex items-center justify-center text-sm font-bold transition-all border-2 rounded-xl 
-                        ${!isAvailable ? "opacity-20 cursor-not-allowed border-gray-100" : ""}
-                        ${isInBag ? "bg-[#7B2D0A] border-[#7B2D0A] text-white" : ""}
-                        ${!isInBag && selectedSize === size ? "bg-black border-black text-white shadow-lg" : ""}
-                        ${!isInBag && isAvailable && selectedSize !== size ? "border-gray-100 text-gray-400 bg-gray-50/50 hover:border-[#7B2D0A]/30" : ""}
-                        `}
+                        className={`relative min-w-[56px] h-14 flex items-center justify-center text-sm font-bold transition-all border-2 rounded-xl ${!isAvailable ? "opacity-20 cursor-not-allowed border-gray-100" : ""} ${isInBag ? "bg-[#7B2D0A] border-[#7B2D0A] text-black cursor-not-allowed" : ""} ${!isInBag && selectedSize === size ? "bg-black border-black text-white" : "border-gray-100 text-gray-400 bg-gray-50/50"}`}
                       >
                         {isInBag && (
                           <Check
                             size={12}
-                            className="absolute -top-1 -right-1 bg-white text-[#7B2D0A] rounded-full p-0.5 shadow-sm border border-[#7B2D0A]"
+                            className="absolute -top-1 -right-1 bg-white text-[#7B2D0A] rounded-full p-0.5 border border-[#7B2D0A]"
                           />
                         )}
                         {size}
@@ -314,24 +316,19 @@ export default function ProductDetails() {
                 <button
                   onClick={handleAddToCart}
                   disabled={isOutOfStock}
-                  className={`w-full py-5 font-bold uppercase tracking-[0.2em] text-xs flex items-center justify-center gap-3 transition-all shadow-lg active:scale-95
-                  ${isOutOfStock ? "bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200" : isAlreadyInCart ? "bg-black text-white hover:bg-[#7B2D0A]" : "bg-[#7B2D0A] text-[#F3E1B6] hover:bg-black"}
-                  `}
+                  className={`w-full py-5 font-bold uppercase tracking-[0.2em] text-xs flex items-center justify-center gap-3 transition-all ${isOutOfStock ? "bg-gray-100 text-gray-400" : isAlreadyInCart ? "bg-black text-white hover:bg-[#7B2D0A]" : "bg-[#7B2D0A] text-[#F3E1B6] hover:bg-black"}`}
                 >
                   {isOutOfStock ? (
                     <>
-                      {" "}
-                      <AlertCircle size={18} /> Out of Stock{" "}
+                      <AlertCircle size={18} /> Out of Stock
                     </>
                   ) : isAlreadyInCart ? (
                     <>
-                      {" "}
-                      <Settings2 size={18} /> Change Fit / Size{" "}
+                      <Settings2 size={18} /> Change Fit / Size
                     </>
                   ) : (
                     <>
-                      {" "}
-                      <ShoppingBag size={18} /> Add To Bag{" "}
+                      <ShoppingBag size={18} /> Add To Bag
                     </>
                   )}
                 </button>
@@ -339,7 +336,7 @@ export default function ProductDetails() {
                   onClick={handleWishlistToggle}
                   className={`w-full border py-5 font-bold uppercase tracking-[0.2em] text-xs flex items-center justify-center gap-3 transition-all ${active ? "bg-red-50 border-red-200 text-red-500" : "border-[#7B2D0A] text-[#7B2D0A]"}`}
                 >
-                  <Heart size={18} fill={active ? "currentColor" : "none"} />
+                  <Heart size={18} fill={active ? "currentColor" : "none"} />{" "}
                   {active ? "In Wishlist" : "Wishlist"}
                 </button>
               </section>
@@ -368,15 +365,13 @@ export default function ProductDetails() {
               />
             </Link>
           </div>
-
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-8">
             <AnimatePresence>
               {similarProducts.map((item, idx) => (
                 <motion.div
-                  key={item.id}
+                  key={(item.id || item._id) as string}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
                   transition={{ delay: idx * 0.1 }}
                 >
                   <ProductCard product={item} />
@@ -398,9 +393,7 @@ export default function ProductDetails() {
           <button
             onClick={handleAddToCart}
             disabled={isOutOfStock}
-            className={`flex-1 py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-[11px] shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-3 
-            ${isOutOfStock ? "bg-gray-100 text-gray-400" : isAlreadyInCart ? "bg-black text-white" : "bg-[#7B2D0A] text-[#F3E1B6]"}
-            `}
+            className={`flex-1 py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-[11px] transition-transform flex items-center justify-center gap-3 ${isOutOfStock ? "bg-gray-100 text-gray-400" : isAlreadyInCart ? "bg-black text-white" : "bg-[#7B2D0A] text-[#F3E1B6]"}`}
           >
             {isOutOfStock
               ? "Out of Stock"
@@ -422,37 +415,34 @@ export default function ProductDetails() {
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     onClick={() => setShowRemoveWishlistModal(false)}
-                    className="absolute inset-0 bg-black/60 backdrop-blur-sm cursor-pointer"
+                    className="absolute inset-0 bg-black/60 backdrop-blur-sm"
                   />
                   <motion.div
-                    initial={{ scale: 0.9, opacity: 0, y: 20 }}
-                    animate={{ scale: 1, opacity: 1, y: 0 }}
-                    exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                    className="relative bg-white w-full max-w-sm rounded-[2.5rem] overflow-hidden shadow-2xl p-8 text-center"
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.9, opacity: 0 }}
+                    className="relative bg-white w-full max-w-sm rounded-[2.5rem] p-8 text-center"
                   >
                     <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
                       <AlertCircle size={32} />
                     </div>
-                    <h3 className="text-xl font-serif text-stone-900 mb-2">
+                    <h3 className="text-xl font-serif mb-2">
                       Wait, reconsider?
                     </h3>
-                    <p className="text-sm text-stone-500 mb-8 leading-relaxed">
-                      Are you sure you want to remove{" "}
-                      <span className="font-bold text-stone-800">
-                        {product.name}
-                      </span>{" "}
-                      from your wishlist? It's a favorite for a reason!
+                    <p className="text-sm text-stone-500 mb-8">
+                      Remove <span className="font-bold">{product.name}</span>{" "}
+                      from wishlist?
                     </p>
                     <div className="flex flex-col gap-3">
                       <button
                         onClick={confirmRemoveWishlist}
-                        className="w-full py-4 bg-red-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg active:scale-95 transition-all"
+                        className="w-full py-4 bg-[#7B2D0A] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest"
                       >
                         Yes, Remove it
                       </button>
                       <button
                         onClick={() => setShowRemoveWishlistModal(false)}
-                        className="w-full py-4 bg-stone-100 text-stone-600 rounded-2xl text-[10px] font-black uppercase tracking-widest active:scale-95 transition-all"
+                        className="w-full py-4 bg-stone-100 text-stone-600 rounded-2xl text-[10px] font-black uppercase tracking-widest"
                       >
                         Keep it
                       </button>
@@ -461,7 +451,6 @@ export default function ProductDetails() {
                 </div>
               )}
             </AnimatePresence>
-
             <AnimatePresence>
               {showSuccess && (
                 <motion.div
@@ -470,23 +459,23 @@ export default function ProductDetails() {
                   exit={{ x: 100, opacity: 0 }}
                   className="fixed bottom-24 md:bottom-10 right-6 md:right-10 z-[9999] w-[90%] max-w-[400px]"
                 >
-                  <div className="bg-white/95 backdrop-blur-2xl border border-stone-200 shadow-[0_20px_50px_rgba(0,0,0,0.2)] rounded-[2.5rem] p-5 flex items-center justify-between gap-4">
+                  <div className="bg-white/95 backdrop-blur-2xl border border-stone-200 shadow-2xl rounded-[2.5rem] p-5 flex items-center justify-between gap-4">
                     <div className="flex items-center gap-4">
-                      <div className="bg-green-100 text-green-600 p-2.5 rounded-full shadow-inner">
+                      <div className="bg-green-100 text-green-600 p-2.5 rounded-full">
                         <CheckCircle2 size={24} />
                       </div>
                       <div className="font-poppins">
-                        <p className="text-[11px] font-black uppercase tracking-tight text-stone-900 leading-none mb-1">
+                        <p className="text-[11px] font-black uppercase text-stone-900 leading-none mb-1">
                           {successMessage}
                         </p>
-                        <p className="text-[10px] text-stone-500 font-medium truncate max-w-[120px]">
+                        <p className="text-[10px] text-stone-500 truncate max-w-[120px]">
                           {product.name}
                         </p>
                       </div>
                     </div>
                     <Link
                       href="/cart"
-                      className="bg-black text-white px-6 py-4 rounded-[1.5rem] text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-[#7B2D0A] transition-all flex items-center gap-2 shadow-xl shadow-black/20"
+                      className="bg-black text-white px-6 py-4 rounded-[1.5rem] text-[10px] font-bold uppercase tracking-widest flex items-center gap-2"
                     >
                       View <ArrowRight size={14} />
                     </Link>

@@ -10,9 +10,11 @@ import { Navigation, Autoplay } from "swiper/modules";
 import ProductCard from "./ProductCard";
 import { products } from "@/data/products";
 import Link from "next/link";
+import { useProducts } from "@/context/ProductContext";
 
 const ProductsSection = () => {
-  const featured = products.slice(0, 10);
+  const { allProducts, isLoading, error } = useProducts();
+  const featured = allProducts.slice(0, 10);
 
   return (
     <section className="relative py-24 md:py-32 bg-[#ffffff] overflow-hidden">

@@ -3,12 +3,15 @@ import "./globals.css";
 import { Libre_Baskerville, Poppins } from "next/font/google";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
-import { WishlistProvider } from "@/context/WishlistContext";
-import { AuthProvider } from "@/context/AuthContext";
-import { CartProvider } from "@/context/CartContext";
+// import { WishlistProvider } from "@/context/WishlistContext";
+// import { AuthProvider } from "@/context/AuthContext";
+// import { CartProvider } from "@/context/CartContext";
 // import LoginStickyBar from "@/components/LoginStickyBar";
 import ScrollToTop from "@/components/ScrollToTop";
 import LayoutWrapper from "@/components/LayoutWrapper";
+// import { ProductProvider } from "@/context/ProductContext";
+// import { SessionProvider } from "next-auth/react";
+import Providers from "@/components/Providers";
 
 const libre = Libre_Baskerville({
   subsets: ["latin"],
@@ -36,19 +39,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${libre.variable} ${poppins.variable} antialiased`}>
-        <AuthProvider>
-          <CartProvider>
-        <WishlistProvider>
-        {/* <Navbar/> */}
-        <ScrollToTop/>
-        <LayoutWrapper>
-        {children}
-        </LayoutWrapper>
-        {/* <LoginStickyBar /> */}
-        <Footer/>
-        </WishlistProvider>
-        </CartProvider>
-        </AuthProvider>
+        <Providers>
+          <ScrollToTop />
+          <LayoutWrapper>
+            {children}
+          </LayoutWrapper>
+          <Footer />
+        </Providers>
       </body>
     </html>
   );

@@ -1,6 +1,7 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
+import { useAuth } from "./AuthContext";
 
 interface CartItem {
   id: string;
@@ -30,29 +31,63 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
   const [discount, setDiscount] = useState(0);
+  const [isInitialLoaded, setIsInitialLoaded] = useState(false);
+  const { isLoggedIn } = useAuth();
 
   useEffect(() => {
-    const savedCart = localStorage.getItem("bannira_cart");
-    const savedCoupon = localStorage.getItem("bannira_coupon");
-    
-    if (savedCart) {
-      try {
-        setCart(JSON.parse(savedCart));
-      } catch (e) {
-        console.error("Failed to parse cart", e);
+    const loadCart = async () => {
+      if (isLoggedIn) {
+        try {
+          const res = await fetch("/api/user/sync");
+          const data = await res.json();
+          if (data.cart) {
+            setCart(data.cart);
+          }
+        } catch (e) {
+          console.error("Cart sync error", e);
+        }
+      } else {
+        const savedCart = localStorage.getItem("bannira_cart");
+        if (savedCart) setCart(JSON.parse(savedCart));
       }
-    }
-    if (savedCoupon) setAppliedCoupon(savedCoupon);
-  }, []);
+      
+      const savedCoupon = localStorage.getItem("bannira_coupon");
+      if (savedCoupon) setAppliedCoupon(savedCoupon);
+      
+      setIsInitialLoaded(true);
+    };
+    loadCart();
+  }, [isLoggedIn]);
 
   useEffect(() => {
+    if (!isInitialLoaded) return;
+
     localStorage.setItem("bannira_cart", JSON.stringify(cart));
+    
+    if (isLoggedIn) {
+      const syncDB = async () => {
+        const cartData = cart.map(item => ({
+          productId: item.id,
+          quantity: item.quantity,
+          size: item.size
+        }));
+
+        await fetch("/api/user/update-list", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ cart: cartData }),
+        });
+      };
+      const handler = setTimeout(syncDB, 1000);
+      return () => clearTimeout(handler);
+    }
+
     if (appliedCoupon) {
       localStorage.setItem("bannira_coupon", appliedCoupon);
     } else {
       localStorage.removeItem("bannira_coupon");
     }
-  }, [cart, appliedCoupon]);
+  }, [cart, appliedCoupon, isLoggedIn, isInitialLoaded]);
 
   const totalPrice = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
@@ -65,17 +100,19 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   }, [totalPrice, appliedCoupon]);
 
   const addToCart = (product: any, size: string) => {
+    const productId = product.id || product._id;
     setCart((prev) => {
-      const existingItem = prev.find((item) => item.id === product.id && item.size === size);
+      const existingItem = prev.find((item) => item.id === productId && item.size === size);
+      
       if (existingItem) {
         return prev.map((item) =>
-          item.id === product.id && item.size === size
+          item.id === productId && item.size === size
             ? { ...item, quantity: item.quantity + 1 }
             : item
         );
       }
       return [...prev, { 
-        id: product.id, 
+        id: productId, 
         name: product.name, 
         price: product.price, 
         image: product.image || (product.images && product.images[0]), 
@@ -100,7 +137,6 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     setCart((prev) => prev.filter((item) => !(item.id === id && item.size === size)));
   };
 
-  
   const clearCart = useCallback(() => {
     setCart([]);
     setAppliedCoupon(null);
