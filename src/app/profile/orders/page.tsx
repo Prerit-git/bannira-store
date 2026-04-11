@@ -1,184 +1,159 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { 
-  ChevronLeft, Package, Truck, CheckCircle2, 
-  MapPin, Clock, ShoppingBag, 
-  ChevronRight, Search, Filter, Calendar, Info
+  ChevronLeft, ShoppingBag, ChevronRight, 
+  CreditCard, ArrowRight, Hash 
 } from "lucide-react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
+import Link from "next/link";
 
 export default function OrdersPage() {
   const router = useRouter();
+  const { isLoggedIn, isLoading: authLoading } = useAuth();
   const [ordersList, setOrdersList] = useState<any[]>([]);
-  const [selectedOrder, setSelectedOrder] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState("active");
+  const [isFetching, setIsFetching] = useState(true);
 
-useEffect(() => {
-  const history = localStorage.getItem("bannira_orders");
-  if (history) {
-    const parsedHistory = JSON.parse(history);
-    setOrdersList(parsedHistory);
+  useEffect(() => {
+    const fetchOrders = async () => {
+      if (!isLoggedIn) return;
+      try {
+        setIsFetching(true);
+        const res = await fetch("/api/orders/user");
+        const data = await res.json();
+        if (res.ok) setOrdersList(data.orders || []);
+      } catch (error) {
+        console.error("Error:", error);
+      } finally {
+        setIsFetching(false);
+      }
+    };
+    if (!authLoading) fetchOrders();
+  }, [isLoggedIn, authLoading]);
+
+  const groupItems = (items: any[]) => {
+    const grouped = items.reduce((acc: any, item: any) => {
+      const key = `${item.productId || item.id}-${item.size}`;
+      if (!acc[key]) acc[key] = { ...item };
+      else acc[key].quantity += item.quantity;
+      return acc;
+    }, {});
+    return Object.values(grouped);
+  };
+
+  if (isFetching || authLoading) {
+    return (
+      <div className="min-h-screen bg-[#FAF9F6] pb-32 pt-32 md:pt-40 px-4">
+        <div className="max-w-3xl mx-auto space-y-6">
+          <div className="h-8 w-48 bg-stone-200 animate-pulse rounded-lg mb-10" />
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="bg-white rounded-[2rem] p-6 border border-stone-100 space-y-6">
+              <div className="flex justify-between">
+                <div className="h-4 w-24 bg-stone-100 animate-pulse rounded" />
+                <div className="h-4 w-20 bg-stone-100 animate-pulse rounded" />
+              </div>
+              <div className="flex gap-4">
+                <div className="w-14 h-18 bg-stone-100 animate-pulse rounded-xl" />
+                <div className="flex-1 space-y-2 py-2">
+                  <div className="h-3 w-full bg-stone-100 animate-pulse rounded" />
+                  <div className="h-3 w-24 bg-stone-100 animate-pulse rounded" />
+                </div>
+              </div>
+              <div className="flex justify-between items-center pt-4 border-t border-stone-50">
+                <div className="space-y-2">
+                  <div className="h-3 w-16 bg-stone-100 animate-pulse rounded" />
+                  <div className="h-4 w-20 bg-stone-100 animate-pulse rounded" />
+                </div>
+                <div className="h-10 w-32 bg-stone-100 animate-pulse rounded-xl" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   }
-}, []);
 
   if (ordersList.length === 0) {
     return (
-      <div className="min-h-screen bg-[#FDFCFB] flex flex-col items-center justify-center p-8 text-center">
-        <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} className="w-24 h-24 bg-stone-50 rounded-full flex items-center justify-center mb-8">
-          <ShoppingBag size={40} strokeWidth={1} className="text-stone-200" />
-        </motion.div>
-        <h2 className="text-2xl font-serif italic text-stone-900 mb-3">No Orders yet</h2>
-        <p className="text-stone-400 text-sm max-w-xs mb-10 leading-relaxed">Items you acquire from our store will appear here for tracking.</p>
-        <Link href="/products" className="bg-black text-[#D4AF37] px-10 py-4 rounded-full text-[10px] font-black uppercase tracking-[0.3em] shadow-2xl active:scale-95 transition-all">
-          Begin Journey
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center p-8 text-center">
+        <div className="w-20 h-20 bg-stone-50 rounded-full flex items-center justify-center mb-6">
+          <ShoppingBag size={32} strokeWidth={1} className="text-stone-300" />
+        </div>
+        <h2 className="text-xl font-serif text-stone-900 mb-2">No orders yet</h2>
+        <Link href="/products" className="bg-black text-white px-8 py-3 rounded-full text-[11px] font-bold uppercase tracking-widest">
+          Start Shopping
         </Link>
       </div>
     );
   }
 
-  if (!selectedOrder) {
-    return (
-      <div className="min-h-screen bg-[#FDFCFB] pb-32 pt-30 md:pt-40">
-        <div className="max-w-5xl mx-auto px-4 md:px-6">
-          
-          <div className="flex items-center mb-8">
-            <button onClick={()=> router.back()} className="p-3 bg-stone-50 rounded-full text-stone-900">
-            <ChevronLeft size={20} />
-          </button>
-            <h1 className="text-2xl font-serif text-stone-900 italic">My Orders</h1>
-            <div className="flex gap-2">
-            </div>
-          </div>
+  return (
+    <div className="min-h-screen bg-[#FAF9F6] pb-32 pt-32 md:pt-40">
+      <div className="max-w-3xl mx-auto px-4">
+        <div className="flex items-center gap-4 mb-10">
+           <button onClick={() => router.back()} className="p-2.5 bg-white rounded-full shadow-sm text-stone-900"><ChevronLeft size={20} /></button>
+           <h1 className="text-2xl font-serif text-stone-900 italic font-medium">My Orders</h1>
+        </div>
 
-          <div className="flex gap-2 mb-8 bg-stone-100 p-1.5 rounded-[1.2rem]">
-            {['active', 'completed'].map((tab) => (
-              <button 
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`flex-1 py-3 rounded-[1rem] text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === tab ? 'bg-white text-black shadow-sm' : 'text-stone-400'}`}
-              >
-                {tab} {tab === 'active' && `(${ordersList.length})`}
-              </button>
-            ))}
-          </div>
-
-          <div className="space-y-5">
-            {ordersList.map((order) => (
+        <div className="grid gap-6">
+          {ordersList.map((order) => {
+            const grouped = groupItems(order.items);
+            const displayId = order._id.toString().slice(-8).toUpperCase();
+            
+            return (
               <motion.div 
-                key={order.orderId}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => setSelectedOrder(order)}
-                className="bg-white rounded-[2rem] p-5 shadow-[0_10px_30px_rgba(0,0,0,0.02)] border border-stone-50 cursor-pointer group"
+                key={order._id} 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-white rounded-[2rem] p-6 border border-stone-100 shadow-sm hover:shadow-md transition-shadow"
               >
-                <div className="flex gap-5">
-                  <div className="relative w-24 h-32 bg-stone-50 rounded-2xl overflow-hidden shrink-0 shadow-inner">
-                    <img src={order.items[0].image} className="w-full h-full object-cover" alt="item" />
-                  </div>
-                  
-                  <div className="flex-1 py-1 flex flex-col justify-between">
-                    <div>
-                      <div className="flex justify-between items-start">
-                        <span className="text-[9px] font-black uppercase tracking-widest text-[#7B2D0A] flex items-center gap-1.5">
-                          <span className="w-1.5 h-1.5 bg-[#7B2D0A] rounded-full animate-pulse" /> In Processing
-                        </span>
-                        <ChevronRight size={16} className="text-stone-300 group-hover:text-black transition-colors" />
+                <div className="flex flex-col gap-6">
+                  <div className="flex justify-between items-center border-b border-stone-50 pb-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 bg-[#7B2D0A] rounded-full" />
+                        <p className="text-[10px] font-bold text-stone-900 uppercase tracking-widest">{order.orderStatus}</p>
                       </div>
-                      <h3 className="text-sm font-bold text-stone-900 mt-2 uppercase tracking-tight">Order #{order.orderId}</h3>
-                      <p className="text-[10px] text-stone-400 mt-1 font-medium">{order.items.length}  piece(s)</p>
+                      <p className="text-[11px] font-bold text-stone-400 flex items-center gap-1">
+                        ID: <span className="text-stone-900 font-black">#{displayId}</span>
+                      </p>
                     </div>
+                    <p className="text-[10px] text-stone-400 font-bold uppercase">
+                      {new Date(order.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                    </p>
+                  </div>
 
-                    <div className="flex justify-between items-end border-t border-stone-50 pt-3">
-                       <div className="flex items-center gap-2 text-stone-400">
-                          <Calendar size={12} />
-                          <span className="text-[10px] font-bold">{order.date}</span>
-                       </div>
-                       <p className="text-sm font-bold text-black font-poppins">₹{order.total.toLocaleString()}</p>
+                  <div className="space-y-4">
+                    {grouped.map((item: any, idx: number) => (
+                      <div key={idx} className="flex items-center gap-4">
+                        <img src={item.image} className="w-14 h-18 object-cover rounded-xl bg-stone-50" alt={item.name} />
+                        <div className="flex-1">
+                          <h4 className="text-xs font-bold text-stone-900 uppercase tracking-tight">{item.quantity} × {item.name}</h4>
+                          <p className="text-[9px] text-stone-400 font-bold uppercase mt-1">Size: {item.size}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="flex items-center justify-between pt-4 border-t border-stone-50">
+                    <div>
+                      <p className="text-[9px] text-stone-400 font-bold uppercase tracking-widest">Total Amount</p>
+                      <p className="text-sm font-bold text-stone-900">₹{order.totalAmount.toLocaleString()}</p>
                     </div>
+                    <Link 
+                      href={`/profile/orders/${order._id}`}
+                      className="bg-stone-900 text-[#D4AF37] px-6 py-3 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] flex items-center gap-2 hover:bg-black transition-all"
+                    >
+                      Track Order <ArrowRight size={14} />
+                    </Link>
                   </div>
                 </div>
               </motion.div>
-            ))}
-          </div>
+            );
+          })}
         </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-white pb-20 pt-30 md:pt-40">
-      <div className="max-w-5xl mx-auto px-4">
-        
-        <div className="flex items-center justify-between mb-8 sticky top-12 bg-white/80 backdrop-blur-lg z-20 py-2">
-          <button onClick={() => setSelectedOrder(null)} className="p-3 bg-stone-50 rounded-full text-stone-900">
-            <ChevronLeft size={20} />
-          </button>
-          <h1 className="text-[11px] font-black uppercase tracking-[0.3em]">Track Shipment</h1>
-          <button className="p-3 bg-stone-50 rounded-full text-stone-900"><Info size={20} /></button>
-        </div>
-
-        <div className="bg-[#1C1C1C] rounded-[2.5rem] p-8 text-white mb-8 shadow-2xl relative overflow-hidden">
-           <div className="absolute top-0 right-0 w-32 h-32 bg-[#D4AF37]/20 blur-3xl" />
-           <div className="flex flex-col gap-1 relative z-10">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-[#D4AF37]">Estimated Delivery</span>
-              <h2 className="text-3xl font-serif italic text-white">In 2-3 working days</h2>
-              <div className="h-1.5 w-full bg-white/10 rounded-full mt-6 overflow-hidden">
-                 <motion.div initial={{ width: 0 }} animate={{ width: '40%' }} className="h-full bg-[#D4AF37]" />
-              </div>
-           </div>
-        </div>
-
-        {/* SHIPMENT INFO */}
-        <div className="space-y-6">
-           <div className="bg-stone-50 rounded-[2rem] p-8">
-              <div className="flex gap-6 relative">
-                 <div className="absolute left-[19px] top-8 bottom-8 w-0.5 bg-stone-200" />
-                 <div className="space-y-12 w-full">
-                    <TrackingPoint title="Order Placed" time="00:00 AM" desc="We've received your order." active done />
-                    <TrackingPoint title="Preparing for shipment" time="In Progress" desc="Ensuring the perfect finish for your piece." active isCurrent />
-                    <TrackingPoint title="Dispatching" time="Pending" desc="Handing over to our courier partner." />
-                    <TrackingPoint title="Arrival" time="Pending" desc="At your doorstep soon." />
-                 </div>
-              </div>
-           </div>
-
-           <div className="bg-white rounded-3xl p-6 border border-stone-100 flex items-start gap-4">
-              <div className="p-3 bg-stone-50 rounded-2xl"><MapPin size={20} className="text-[#7B2D0A]" /></div>
-              <div>
-                <p className="text-[10px] font-black uppercase tracking-widest text-stone-400 mb-1">Delivering to</p>
-                <p className="text-sm font-bold text-stone-900">{selectedOrder.address.fullName}</p>
-                <p className="text-xs text-stone-500 mt-1 uppercase leading-tight">{selectedOrder.address.address}, {selectedOrder.address.area}, {selectedOrder.address.state}</p>
-              </div>
-           </div>
-        </div>
-
-        <div className="fixed bottom-8 left-4 right-4 md:hidden z-50">
-           <button className="w-full bg-black text-[#D4AF37] py-5 rounded-2xl font-black uppercase text-[10px] tracking-[0.3em] shadow-2xl active:scale-95 transition-all">
-              Contact us
-           </button>
-        </div>
-
-      </div>
-    </div>
-  );
-}
-
-function TrackingPoint({ title, time, desc, active = false, done = false, isCurrent = false }: any) {
-  return (
-    <div className="flex gap-6 relative z-10">
-      <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-all duration-700 
-        ${done ? 'bg-black text-[#D4AF37]' : isCurrent ? 'bg-[#7B2D0A] text-white shadow-lg shadow-[#7B2D0A]/30 scale-110' : 'bg-white border-2 border-stone-100 text-stone-200'}`}>
-        {done ? <CheckCircle2 size={18} /> : isCurrent ? <Truck size={18} /> : <Package size={18} />}
-      </div>
-      <div className={active ? 'opacity-100' : 'opacity-30'}>
-        <div className="flex items-center gap-2">
-          <h3 className="text-[11px] font-black uppercase tracking-widest text-stone-900">{title}</h3>
-          {isCurrent && <span className="w-1.5 h-1.5 bg-[#D4AF37] rounded-full animate-ping" />}
-        </div>
-        <p className="text-[9px] font-bold text-stone-400 uppercase mt-0.5">{time}</p>
-        <p className="text-[11px] text-stone-500 mt-2 font-medium leading-relaxed">{desc}</p>
       </div>
     </div>
   );

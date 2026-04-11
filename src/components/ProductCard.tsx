@@ -23,8 +23,9 @@ const getOptimizedUrl = (url: string) => {
 };
 
 const ProductCard = ({ product, onAddToCartSuccess }: ProductCardProps) => {
-  const { id, _id, name, category, price, originalPrice, images, badge, sizes, quantity, inStock } = product;
+  const { id, _id, name, slug, category, price, originalPrice, images, badge, sizes, quantity, inStock } = product;
   const productId = id || _id;
+  const productSlug = slug;
 
   const router = useRouter();
   const pathname = usePathname();
@@ -115,7 +116,7 @@ const ProductCard = ({ product, onAddToCartSuccess }: ProductCardProps) => {
         }}
       >
         <div className="relative aspect-[3/4] overflow-hidden bg-[#F9F9F9]">
-          <Link href={`/products/${productId}`} className="block h-full relative">
+          <Link href={`/products/${productSlug}`} className="block h-full relative">
             <Image
               src={getOptimizedUrl(images && images.length > 0 ? images[currentIndex] : "")}
               alt={name}
@@ -145,7 +146,7 @@ const ProductCard = ({ product, onAddToCartSuccess }: ProductCardProps) => {
 
         <div className="p-5 flex flex-col min-h-[180px]">
           <p className="text-[9px] tracking-[0.2em] uppercase text-stone-400 font-bold mb-1 font-poppins">{category}</p>
-          <Link href={`/products/${productId}`}>
+          <Link href={`/products/${productSlug}`}>
             <h3 className="text-sm font-serif text-[#1A1A1A] mb-2 group-hover:text-[#7B2D0A] transition-colors line-clamp-2">{name}</h3>
           </Link>
 

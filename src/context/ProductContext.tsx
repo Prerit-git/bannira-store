@@ -12,6 +12,16 @@ interface ProductContextType {
 
 const ProductContext = createContext<ProductContextType | undefined>(undefined);
 
+// Helper function to create slug
+const generateSlug = (name: string) => {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/[\s_-]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+};
+
 export function ProductProvider({ children }: { children: React.ReactNode }) {
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -26,7 +36,17 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
       if (!res.ok) throw new Error("Database connection failed");
       
       const data = await res.json();
-      setAllProducts(data);
+
+      const formattedProducts = data.map((product: any) => {
+        const id = product._id?.toString() || product.id;
+        return {
+          ...product,
+          id: id,
+          slug: `${generateSlug(product.name)}-${id.slice(-4)}`
+        };
+      });
+
+      setAllProducts(formattedProducts);
     } catch (err: any) {
       setError(err.message);
     } finally {

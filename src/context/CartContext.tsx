@@ -1,7 +1,9 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { useAuth } from "./AuthContext";
+import { AnimatePresence, motion } from "framer-motion";
+import { ShieldCheck } from "lucide-react";
 
 interface CartItem {
   id: string;
@@ -33,6 +35,15 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   const [discount, setDiscount] = useState(0);
   const [isInitialLoaded, setIsInitialLoaded] = useState(false);
   const { isLoggedIn } = useAuth();
+  const [notification, setNotification] = useState<{message: string, visible: boolean}>({
+  message: "",
+  visible: false
+});
+
+const showToast = (msg: string) => {
+  setNotification({ message: msg, visible: true });
+  setTimeout(() => setNotification({ message: "", visible: false }), 3000);
+};
 
   useEffect(() => {
     const loadCart = async () => {
@@ -101,16 +112,28 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
 
   const addToCart = (product: any, size: string) => {
     const productId = product.id || product._id;
+    const availableStock = product.quantity;
+
     setCart((prev) => {
       const existingItem = prev.find((item) => item.id === productId && item.size === size);
       
       if (existingItem) {
+        if (existingItem.quantity + 1 > availableStock) {
+          showToast(`Limit reached: Only ${availableStock} units available in stock.`);
+          return prev;
+        }
         return prev.map((item) =>
           item.id === productId && item.size === size
             ? { ...item, quantity: item.quantity + 1 }
             : item
         );
       }
+
+      if (availableStock < 1) {
+        showToast("Out of stock");
+        return prev;
+      }
+
       return [...prev, { 
         id: productId, 
         name: product.name, 
@@ -122,15 +145,37 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     });
   };
 
-  const updateQuantity = (id: string, size: string, newQuantity: number) => {
+  const updateQuantity = async (id: string, size: string, newQuantity: number) => {
     if (newQuantity < 1) return;
-    setCart((prev) =>
-      prev.map((item) =>
-        item.id === id && item.size === size
-          ? { ...item, quantity: newQuantity }
-          : item
-      )
-    );
+
+    try {
+      const res = await fetch(`/api/products/${id}`);
+
+      if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.error || "Failed to fetch stock");
+    }
+      const productData = await res.json();
+      
+      if (!res.ok) throw new Error("Failed to fetch stock");
+
+      const availableStock = productData.quantity;
+
+      if (newQuantity > availableStock) {
+        showToast(`Limit reached: Only ${availableStock} units available in stock.`);
+        return;
+      }
+
+      setCart((prev) =>
+        prev.map((item) =>
+          item.id === id && item.size === size
+            ? { ...item, quantity: newQuantity }
+            : item
+        )
+      );
+    } catch (error) {
+      console.error("Stock validation error:", error);
+    }
   };
 
   const removeFromCart = (id: string, size: string) => {
@@ -172,6 +217,26 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
       removeCoupon
     }}>
       {children}
+
+      <AnimatePresence>
+      {notification.visible && (
+        <motion.div
+          initial={{ y: 100, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: 100, opacity: 0 }}
+          className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[999] w-[90%] md:w-auto"
+        >
+          <div className="bg-[#1C1C1C] text-[#D4AF37] px-8 py-4 rounded-2xl shadow-2xl border border-[#D4AF37]/20 flex items-center gap-4 backdrop-blur-md bg-opacity-95">
+            <div className="bg-[#D4AF37] text-black rounded-full p-1">
+              <ShieldCheck size={16} />
+            </div>
+            <p className="text-[11px] font-black uppercase tracking-[0.2em] whitespace-nowrap">
+              {notification.message}
+            </p>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
     </CartContext.Provider>
   );
 };

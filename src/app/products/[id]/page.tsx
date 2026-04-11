@@ -63,7 +63,8 @@ export default function ProductDetails() {
   }, []);
 
   const product = useMemo(() => {
-    return allProducts.find((p) => (p.id || p._id) === id);
+    // return allProducts.find((p) => (p.id || p._id) === id);
+    return allProducts.find((p: any) => p.slug === id);
   }, [id, allProducts]);
 
   const similarProducts = useMemo(() => {
@@ -72,7 +73,8 @@ export default function ProductDetails() {
       .filter(
         (p) =>
           p.category === product.category &&
-          (p.id || p._id) !== (product.id || product._id),
+          // (p.id || p._id) !== (product.id || product._id),
+          p.slug !== product.slug,
       )
       .slice(0, 5);
   }, [product, allProducts]);
@@ -112,7 +114,7 @@ export default function ProductDetails() {
   }
 
   // Yahan ID handling fix ki gayi hai
-  const productId = (product.id || product._id) as string;
+  const productId = (product.id || product._id || product.slug) as string;
   const isOutOfStock = !product.inStock || product.quantity === 0;
   
   const cartItem = isLoggedIn

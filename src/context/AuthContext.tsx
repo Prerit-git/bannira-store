@@ -1,12 +1,12 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState } from "react";
 import { useSession, signOut } from "next-auth/react";
 
 interface AuthContextType {
   isLoggedIn: boolean;
   isLoading: boolean;
-  user: any;
+  user: any; 
   redirectPath: string | null;
   setRedirectPath: (path: string | null) => void;
   logout: () => void;
@@ -20,7 +20,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const isLoggedIn = status === "authenticated";
   const isLoading = status === "loading";
-  const user = session?.user || null;
+  
+  const user = session?.user ? {
+    ...session.user,
+    id: (session.user as any).id || (session.user as any)._id 
+  } : null;
 
   const logout = () => {
     signOut({ callbackUrl: "/login" });

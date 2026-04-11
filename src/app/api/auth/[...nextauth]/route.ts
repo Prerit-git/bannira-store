@@ -34,7 +34,12 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Invalid password");
         }
 
-        return user;
+        return {
+          id: user._id.toString(),
+          email: user.email,
+          name: user.name,
+          image: user.image,
+        };
       },
     }),
   ],
@@ -43,60 +48,48 @@ export const authOptions: NextAuthOptions = {
       if (account?.provider === "google") {
         try {
           await connectDB();
-          const { name, email, image } = user;
-
-          const existingUser = await User.findOne({ email });
+          const existingUser = await User.findOne({ email: user.email });
 
           if (!existingUser) {
-            await User.create({
-              name,
-              email,
-              image,
+            const newUser = await User.create({
+              name: user.name,
+              email: user.email,
+              image: user.image,
               role: "user",
             });
-            console.log("SUCCESS: Google User stored in Atlas");
+            user.id = newUser._id.toString();
+          } else {
+            user.id = existingUser._id.toString();
           }
           return true;
         } catch (error) {
-          console.error("ERROR: Saving Google user to Atlas", error);
+          console.error("ERROR: Google user sync", error);
           return false;
         }
       }
       return true;
     },
 
-    async jwt({ token, user, trigger, session }) {
+    async jwt({ token, user }) {
+      // Very Important: Token ki default sub/id ko MongoDB ID se overwrite kar rahe hain
       if (user) {
-        token.id = user.id || (user as any)._id?.toString();
-        token.name = user.name;
-        token.picture = user.image || (user as any).image;
+        token.id = user.id;
       }
-      
-      if (trigger === "update" && session?.name) {
-        token.name = session.name;
-      }
-
       return token;
     },
 
     async session({ session, token }: any) {
       if (session.user) {
+        // Frontend ko hamesha token.id milegi (Jo hamari MongoDB _id hai)
         session.user.id = token.id;
-        session.user.name = token.name;
-        session.user.image = token.picture;
       }
       return session;
     },
   },
-  session: {
-    strategy: "jwt",
-  },
-  pages: {
-    signIn: "/login",
-  },
+  session: { strategy: "jwt" },
+  pages: { signIn: "/login" },
   secret: process.env.NEXTAUTH_SECRET,
 };
 
 const handler = NextAuth(authOptions);
-
 export { handler as GET, handler as POST };
