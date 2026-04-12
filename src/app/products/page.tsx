@@ -70,11 +70,18 @@ export default function ProductsPage() {
     setSelectedPriceRanges([]);
   };
 
+  useEffect(() => {
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth",
+  });
+}, [selectedCategory, selectedSize, selectedColor, selectedPriceRanges, sortOption]);
+
   const activeFiltersCount =
     selectedCategory.length +
     selectedSize.length +
     selectedColor.length +
-    (priceRange.min > 0 || priceRange.max < 100000 ? 1 : 0);
+    // (priceRange.min > 0 || priceRange.max < 100000 ? 1 : 0);
     selectedPriceRanges.length;
 
   let filteredProducts = allProducts.filter((product) => {
@@ -265,7 +272,7 @@ export default function ProductsPage() {
         </section>
       </div>
 
-      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-40 w-[85%] md:hidden flex bg-[#2A1A12] rounded-2xl shadow-2xl border border-white/10 overflow-hidden">
+      <div className="fixed bottom-0 left-0 right-0 z-40 w-full md:hidden flex bg-[#2A1A12]  overflow-hidden">
         <button onClick={() => setIsFilterOpen(true)} className="flex-1 flex items-center justify-center gap-2 py-4 text-white font-bold text-xs uppercase tracking-widest border-r border-white/5 relative active:bg-white/10 transition">
           <div className="relative">
             <Filter size={16} className="text-[#D4AF37]" />

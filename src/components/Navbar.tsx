@@ -51,6 +51,7 @@ export default function Navbar({ isBarVisible = true }: NavbarProps) {
   const [scrolled, setScrolled] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
 
   const topSpacing = isBarVisible ? "top-2 md:top-5" : "top-0";
 
@@ -74,10 +75,17 @@ export default function Navbar({ isBarVisible = true }: NavbarProps) {
     document.body.style.overflow = menuOpen || searchOpen ? "hidden" : "";
   }, [menuOpen, searchOpen]);
 
-  const handleLogout = () => {
+  const confirmLogout = () => {
+  setLogoutConfirmOpen(true);
+};
+
+const handleLogoutAction = (confirm: boolean) => {
+  if (confirm) {
     logout();
     setMenuOpen(false);
-  };
+  }
+  setLogoutConfirmOpen(false);
+};
 
   const isHome = pathname === "/";
   const navbarBg = isHome
@@ -163,7 +171,7 @@ export default function Navbar({ isBarVisible = true }: NavbarProps) {
                         </span>
                       </Link>
                       <button
-                        onClick={handleLogout}
+                        onClick={confirmLogout}
                         className="flex items-center gap-3 py-3 w-full text-sm text-red-600 font-bold hover:bg-red-50 rounded-lg transition-all mt-2"
                       >
                         <LogOut size={18} /> Logout
@@ -379,7 +387,7 @@ export default function Navbar({ isBarVisible = true }: NavbarProps) {
               <div className="p-6 bg-white border-t border-stone-100 space-y-6">
                 {isLoggedIn && (
                   <button
-                    onClick={handleLogout}
+                    onClick={confirmLogout}
                     className="w-full flex items-center justify-center gap-3 py-4 bg-red-50 text-red-500 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-red-100 active:scale-95 transition-all"
                   >
                     <LogOut size={16} />
@@ -405,6 +413,63 @@ export default function Navbar({ isBarVisible = true }: NavbarProps) {
           </>
         )}
       </AnimatePresence>
+
+      {/* --- LOGOUT CONFIRMATION MODAL --- */}
+<AnimatePresence>
+  {logoutConfirmOpen && (
+    <div className="fixed inset-0 z-[999] flex items-center justify-center p-6">
+      {/* Backdrop */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={() => setLogoutConfirmOpen(false)}
+        className="absolute inset-0 bg-black/60 backdrop-blur-md"
+      />
+
+      {/* Modal Card */}
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0, y: 20 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.9, opacity: 0, y: 20 }}
+        className="relative bg-white w-full max-w-sm rounded-[2.5rem] overflow-hidden shadow-2xl p-8 md:p-10 text-center border border-stone-100"
+      >
+        <div className="w-20 h-20 bg-stone-50 rounded-full flex items-center justify-center mx-auto mb-6 text-red-500">
+          <LogOut size={36} strokeWidth={1.5} />
+        </div>
+
+        <h3 className="text-2xl font-serif text-stone-900 mb-3 italic">
+          Leaving so soon?
+        </h3>
+        <p className="text-[11px] font-bold text-stone-400 uppercase tracking-widest leading-relaxed mb-10">
+          Are you sure you want to log out of your Bannira account?
+        </p>
+
+        <div className="flex flex-col gap-3">
+          <button
+            onClick={() => handleLogoutAction(true)}
+            className="w-full py-4 bg-black text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-black/10 hover:bg-[#7B2D0A] transition-all active:scale-95"
+          >
+            Yes, Sign Me Out
+          </button>
+          
+          <button
+            onClick={() => handleLogoutAction(false)}
+            className="w-full py-4 bg-white text-stone-500 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] border border-stone-100 hover:bg-stone-50 transition-all active:scale-95"
+          >
+            No, Stay Logged In
+          </button>
+        </div>
+
+        <div className="mt-8 flex justify-center gap-1.5 opacity-20">
+          <div className="w-1 h-1 rounded-full bg-stone-400" />
+          <div className="w-1 h-1 rounded-full bg-stone-400" />
+          <div className="w-1 h-1 rounded-full bg-stone-400" />
+        </div>
+      </motion.div>
+    </div>
+  )}
+</AnimatePresence>
 
       <AnimatePresence>
         {searchOpen && (

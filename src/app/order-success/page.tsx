@@ -129,7 +129,7 @@ export default function OrderSuccessPage() {
                 </button>
                 <button className="flex flex-col items-center gap-2 p-4 bg-stone-50 rounded-2xl hover:bg-black hover:text-white transition-all group">
                   <HelpCircle size={18} className="group-hover:scale-110 transition-transform" />
-                  <span className="text-[9px] font-black uppercase tracking-widest text-center">Concierge Help</span>
+                  <span className="text-[9px] font-black uppercase tracking-widest text-center">Need Help</span>
                 </button>
                 <Link href={`/profile/orders/${orderId}`} className="flex flex-col items-center gap-2 p-4 bg-stone-50 rounded-2xl hover:bg-black hover:text-white transition-all group">
                   <Truck size={18} className="group-hover:scale-110 transition-transform" />

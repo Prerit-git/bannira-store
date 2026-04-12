@@ -37,7 +37,6 @@ export default function CheckoutPage() {
     addressType: "home",
   });
 
-  // Calculations
   const subtotal = totalPrice;
   const shipping = subtotal > 5000 ? 0 : 250;
   const tax = Math.round(subtotal * 0.12);
@@ -55,6 +54,8 @@ export default function CheckoutPage() {
             setUsePreviousAddress(true); 
             setFormData(prevAddr);
           } else {
+            // Agar koi order nahi hai, toh buttons hide rahenge aur form auto-fill hoga basics ke saath
+            setUsePreviousAddress(false);
             setFormData(prev => ({ ...prev, fullName: user.name || "", email: user.email || "" }));
           }
         } catch (e) { console.error(e); }
@@ -127,7 +128,6 @@ export default function CheckoutPage() {
 
   return (
     <div className="min-h-screen bg-[#FAF9F6] pb-32 pt-32 md:pt-40">
-      {/* Toast Notification */}
       <AnimatePresence>
         {notification.visible && (
           <motion.div initial={{ y: 50, opacity: 0, x: "-50%" }} animate={{ y: 0, opacity: 1, x: "-50%" }} exit={{ y: 50, opacity: 0, x: "-50%" }} className="fixed bottom-10 left-1/2 z-[300] bg-[#1C1C1C] text-[#D4AF37] px-8 py-4 rounded-2xl shadow-2xl border border-[#D4AF37]/20 flex items-center gap-4">
@@ -150,8 +150,9 @@ export default function CheckoutPage() {
             <div className="bg-white rounded-[2.5rem] p-6 md:p-10 shadow-sm border border-stone-100">
               <SectionHeading icon={<MapPin size={18} />} title="Delivery Details" />
               
-              <div className="grid grid-cols-1 gap-4 mb-8">
-                {lastAddress && (
+              {/* SAVED ADDRESS CARDS: Sirf tab dikhao jab lastAddress exist karta ho */}
+              {lastAddress && (
+                <div className="grid grid-cols-1 gap-4 mb-8">
                   <button
                     type="button"
                     onClick={() => { setUsePreviousAddress(true); setFormData(lastAddress); }}
@@ -164,21 +165,22 @@ export default function CheckoutPage() {
                       {usePreviousAddress && <CheckCircle2 size={18} className="text-[#7B2D0A]" />}
                     </div>
                     <p className="font-bold text-stone-900 text-sm">{lastAddress.fullName}</p>
-                    <p className="font-bold text-stone-900 text-sm">{lastAddress.phone}</p>
+                    <p className="text-[11px] font-bold text-stone-700">{lastAddress.phone}</p>
                     <p className="text-xs text-stone-500 mt-1 italic font-serif">{lastAddress.address}, {lastAddress.area}, {lastAddress.state} - {lastAddress.pincode}</p>
                   </button>
-                )}
-                <button
-                  type="button"
-                  onClick={() => { setUsePreviousAddress(false); }}
-                  className={`p-6 rounded-3xl border-2 border-dashed flex items-center justify-center gap-3 text-[10px] font-bold uppercase tracking-widest transition-all ${!usePreviousAddress ? "border-[#7B2D0A] text-[#7B2D0A] bg-[#7B2D0A]/5" : "border-stone-200 text-stone-400"}`}
-                >
-                  <Plus size={16} /> New Address
-                </button>
-              </div>
+                  <button
+                    type="button"
+                    onClick={() => { setUsePreviousAddress(false); }}
+                    className={`p-6 rounded-3xl border-2 border-dashed flex items-center justify-center gap-3 text-[10px] font-bold uppercase tracking-widest transition-all ${!usePreviousAddress ? "border-[#7B2D0A] text-[#7B2D0A] bg-[#7B2D0A]/5" : "border-stone-200 text-stone-400"}`}
+                  >
+                    <Plus size={16} /> New Address
+                  </button>
+                </div>
+              )}
 
-              {!usePreviousAddress && (
-                <div className="space-y-8 pt-4">
+              {/* FORM: Tab dikhao jab usePreviousAddress false ho YA user bilkul naya ho */}
+              {(!usePreviousAddress || !lastAddress) && (
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-8 pt-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-10">
                     <InputField label="Full Name *" name="fullName" value={formData.fullName} onChange={handleInputChange} />
                     <div className="relative">
@@ -195,7 +197,7 @@ export default function CheckoutPage() {
                     <TypeBadge active={formData.addressType === "home"} onClick={() => setFormData(p => ({...p, addressType: "home"}))} icon={<Home size={14} />} label="Home" />
                     <TypeBadge active={formData.addressType === "work"} onClick={() => setFormData(p => ({...p, addressType: "work"}))} icon={<Briefcase size={14} />} label="Office" />
                   </div>
-                </div>
+                </motion.div>
               )}
             </div>
 
@@ -209,9 +211,9 @@ export default function CheckoutPage() {
             </div>
           </div>
 
+          {/* SIDEBAR */}
           <aside className="lg:col-span-5 lg:sticky lg:top-40">
             <div className="bg-[#1C1C1C] text-white rounded-[2.5rem] p-8 md:p-10 shadow-2xl relative">
-              
               <button 
                 type="button" 
                 onClick={() => setIsSummaryExpanded(!isSummaryExpanded)} 
@@ -246,8 +248,8 @@ export default function CheckoutPage() {
               <div className="space-y-4">
                 <div className="flex justify-between text-[11px] font-bold uppercase tracking-widest text-stone-500"><span>Subtotal</span><span className="text-white">₹{subtotal.toLocaleString()}</span></div>
                 {discount > 0 && <div className="flex justify-between text-[11px] font-bold uppercase tracking-widest text-green-500"><span>Discount</span><span>- ₹{discount.toLocaleString()}</span></div>}
-                <div className="flex justify-between text-[11px] font-bold uppercase tracking-widest text-stone-500"><span>GST (12%)</span><span className="text-white">₹{tax.toLocaleString()}</span></div>
-                <div className="flex justify-between text-[11px] font-bold uppercase tracking-widest text-stone-500"><span>Delivery</span><span className={shipping === 0 ? "text-green-500 font-black" : "text-white"}>{shipping === 0 ? "COMPLIMENTARY" : `₹${shipping}`}</span></div>
+                <div className="flex justify-between text-[11px] font-bold uppercase tracking-widest text-stone-500"><span>GST</span><span className="text-white">₹{tax.toLocaleString()}</span></div>
+                <div className="flex justify-between text-[11px] font-bold uppercase tracking-widest text-stone-500"><span>Delivery</span><span className={shipping === 0 ? "text-green-500 font-black" : "text-white"}>{shipping === 0 ? "FREE" : `₹${shipping}`}</span></div>
                 <div className="h-px bg-white/10 my-6" />
                 <div className="flex justify-between items-end">
                   <div>
