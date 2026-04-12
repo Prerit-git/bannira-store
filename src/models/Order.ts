@@ -23,6 +23,10 @@ export interface IOrder extends Document {
     state: string;
     addressType: string;
   };
+  subtotal: number;
+  shippingCharge: number;
+  tax: number;
+  discount: number;
   totalAmount: number;
   paymentMethod: string;
   paymentStatus: "Pending" | "Paid" | "Failed";
@@ -58,6 +62,10 @@ const OrderSchema = new Schema<IOrder>(
       state: { type: String, required: true },
       addressType: { type: String, default: "home" },
     },
+    subtotal: { type: Number, required: true },
+    shippingCharge: { type: Number, default: 0 },
+    tax: { type: Number, default: 0 },
+    discount: { type: Number, default: 0 },
     totalAmount: { type: Number, required: true },
     paymentMethod: { 
       type: String, 

@@ -17,6 +17,12 @@ export default function OrdersPage() {
   const [isFetching, setIsFetching] = useState(true);
 
   useEffect(() => {
+    if (!authLoading && !isLoggedIn) {
+      router.replace("/login");
+    }
+  }, [isLoggedIn, authLoading, router]);
+
+  useEffect(() => {
     const fetchOrders = async () => {
       if (!isLoggedIn) return;
       try {

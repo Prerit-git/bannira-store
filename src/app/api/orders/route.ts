@@ -9,7 +9,7 @@ export async function POST(req: Request) {
   try {
     await connectDB();
     const body = await req.json();
-    const { userId, items, address, total, paymentMethod } = body;
+    const { userId, items, address, subtotal, shippingCharge, tax, discount, total, paymentMethod } = body;
 
     // Stock check
     for (const item of items) {
@@ -33,6 +33,10 @@ export async function POST(req: Request) {
       userEmail: address.email,
       items,
       shippingAddress: address,
+      subtotal,
+      shippingCharge,
+      discount,
+      tax,
       totalAmount: total,
       paymentMethod,
       paymentStatus: paymentMethod === "cod" ? "Pending" : "Paid",

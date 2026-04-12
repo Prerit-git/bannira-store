@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useWishlist } from "@/context/WishlistContext";
 import { useAuth } from "@/context/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
@@ -20,8 +20,14 @@ import { useRouter } from "next/navigation";
 export default function WishlistPage() {
   const router = useRouter();
   const { wishlist, removeFromWishlist, clearWishlist } = useWishlist();
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, isLoading: authLoading } = useAuth();
   const [showToast, setShowToast] = useState(false);
+
+  useEffect(() => {
+    if (!authLoading && !isLoggedIn) {
+      router.replace("/login");
+    }
+  }, [isLoggedIn, authLoading, router]);
 
   const handleCartSuccess = (productId: string) => {
     removeFromWishlist(productId);

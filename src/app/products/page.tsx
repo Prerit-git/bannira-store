@@ -14,6 +14,7 @@ export default function ProductsPage() {
   const [selectedSize, setSelectedSize] = useState<string[]>([]);
   const [selectedColor, setSelectedColor] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState({ min: 0, max: 100000 });
+  const [selectedPriceRanges, setSelectedPriceRanges] = useState<any[]>([]);
   const [sortOption, setSortOption] = useState<string>("latest");
 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -41,6 +42,14 @@ export default function ProductsPage() {
     { label: "Above ₹3000", min: 3000, max: 100000 },
   ];
 
+  const togglePriceFilter = (range: { label: string; min: number; max: number }) => {
+  setSelectedPriceRanges((prev) =>
+    prev.some((p) => p.label === range.label)
+      ? prev.filter((p) => p.label !== range.label)
+      : [...prev, range]
+  );
+};
+
   const toggleFilter = <T extends string | number>(
     value: T,
     selected: T[],
@@ -58,6 +67,7 @@ export default function ProductsPage() {
     setSelectedSize([]);
     setSelectedColor([]);
     setPriceRange({ min: 0, max: 100000 });
+    setSelectedPriceRanges([]);
   };
 
   const activeFiltersCount =
@@ -65,12 +75,16 @@ export default function ProductsPage() {
     selectedSize.length +
     selectedColor.length +
     (priceRange.min > 0 || priceRange.max < 100000 ? 1 : 0);
+    selectedPriceRanges.length;
 
   let filteredProducts = allProducts.filter((product) => {
     const categoryMatch = selectedCategory.length === 0 || selectedCategory.includes(product.category);
     const sizeMatch = selectedSize.length === 0 || product.sizes?.some((s: any) => selectedSize.includes(s));
     const colorMatch = selectedColor.length === 0 || selectedColor.includes(product.color);
-    const priceMatch = product.price >= priceRange.min && product.price <= priceRange.max;
+    // const priceMatch = product.price >= priceRange.min && product.price <= priceRange.max;
+    const priceMatch = 
+    selectedPriceRanges.length === 0 || 
+    selectedPriceRanges.some(range => product.price >= range.min && product.price <= range.max);
 
     return categoryMatch && sizeMatch && colorMatch && priceMatch;
   });
@@ -155,7 +169,7 @@ export default function ProductsPage() {
             onToggle={(v: any) => toggleFilter(v, selectedCategory, setSelectedCategory)}
           />
 
-          <div className="space-y-4">
+          {/* <div className="space-y-4">
             <p className="text-sm font-bold uppercase tracking-widest text-[#2A1A12]">Price Range</p>
             {priceOptions.map((p) => (
               <button
@@ -170,7 +184,28 @@ export default function ProductsPage() {
                 {p.label}
               </button>
             ))}
-          </div>
+          </div> */}
+
+          <div className="space-y-4">
+  <p className="text-sm font-bold uppercase tracking-widest text-[#2A1A12]">Price Range</p>
+  {priceOptions.map((p) => {
+    const isSelected = selectedPriceRanges.some((range) => range.label === p.label);
+    return (
+      <button
+        key={p.label}
+        onClick={() => togglePriceFilter(p)}
+        className={`w-full text-left px-4 py-3 rounded-xl border text-sm transition-all flex justify-between items-center ${
+          isSelected
+            ? "border-[#D4AF37] bg-[#FDFBF0] text-[#7B2D0A] font-bold"
+            : "border-gray-100 bg-white hover:border-gray-300"
+        }`}
+      >
+        {p.label}
+        {isSelected && <Check size={14} className="text-[#D4AF37]" />}
+      </button>
+    );
+  })}
+</div>
 
           <FilterSection
             title="Available Sizes"
@@ -266,7 +301,7 @@ export default function ProductsPage() {
                     ))}
                   </div>
                 </MobileFilterGroup>
-                <MobileFilterGroup title="Price Range">
+                {/* <MobileFilterGroup title="Price Range">
                   <div className="grid grid-cols-1 gap-2">
                     {priceOptions.map((p) => (
                       <button key={p.label} onClick={() => setPriceRange({ min: p.min, max: p.max })} className={`w-full py-4 px-6 rounded-2xl border text-left flex justify-between items-center ${priceRange.min === p.min && priceRange.max === p.max ? "bg-white border-[#D4AF37] ring-1 ring-[#D4AF37]" : "bg-white border-gray-100"}`}>
@@ -275,7 +310,26 @@ export default function ProductsPage() {
                       </button>
                     ))}
                   </div>
-                </MobileFilterGroup>
+                </MobileFilterGroup> */}
+                <MobileFilterGroup title="Price Range">
+  <div className="grid grid-cols-1 gap-2">
+    {priceOptions.map((p) => {
+      const isSelected = selectedPriceRanges.some((range) => range.label === p.label);
+      return (
+        <button 
+          key={p.label} 
+          onClick={() => togglePriceFilter(p)} 
+          className={`w-full py-4 px-6 rounded-2xl border text-left flex justify-between items-center ${
+            isSelected ? "bg-white border-[#D4AF37] ring-1 ring-[#D4AF37]" : "bg-white border-gray-100"
+          }`}
+        >
+          <span className={isSelected ? "font-bold text-[#7B2D0A]" : ""}>{p.label}</span>
+          {isSelected && <Check size={18} className="text-[#D4AF37]" />}
+        </button>
+      );
+    })}
+  </div>
+</MobileFilterGroup>
                 <MobileFilterGroup title="Colors">
                   <div className="flex flex-wrap gap-4">
                     {colors.map((color) => (
