@@ -1,0 +1,511 @@
+[
+  {
+    "_id": "69d78c2ca2fb8a7e708eab5c",
+    "name": "Vanraagini – Short Cotton Kurti",
+    "category": "Cotton Kurti",
+    "price": 699,
+    "originalPrice": 1599,
+    "image": "https://res.cloudinary.com/dvmpnsfpo/image/upload/v1775735201/pic1_uv6svz.jpg",
+    "images": [
+      "https://res.cloudinary.com/dvmpnsfpo/image/upload/v1775735201/pic1_uv6svz.jpg",
+      "https://res.cloudinary.com/dvmpnsfpo/image/upload/v1775735201/pic3_jtihou.jpg",
+      "https://res.cloudinary.com/dvmpnsfpo/image/upload/v1775735201/pic2_ecqkww.jpg"
+    ],
+    "badge": "Bestseller",
+    "description": "Fresh like the first touch of morning sunlight, Vanraagini brings nature’s melody to your wardrobe. Crafted in soft cotton, this lime-green short kurti features a delicate hand-block–style print of tiny white and blue butis—each motif adding a rhythmic, almost musical charm to the fabric. The square neckline and easy three-quarter sleeves give it a clean, graceful silhouette, perfect for warm days and unhurried moods",
+    "fabric": "Pure Cotton",
+    "occasion": "Daily Wear / Office",
+    "work": "Block Print",
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "inStock": true,
+    "quantity": 3,
+    "color": "red",
+    "colorCode": "#FF0000",
+    "createdAt": "2026-04-09T19:26:23.342Z",
+    "__v": 0,
+    "updatedAt": "2026-04-11T19:34:01.661Z"
+  },
+  {
+    "_id": "69d78c2ca2fb8a7e708eab5e",
+    "name": "Kanak Lehar – Short Cotton Kurti",
+    "category": "Cotton Kurti",
+    "price": 1599,
+    "originalPrice": 2499,
+    "image": "https://res.cloudinary.com/dvmpnsfpo/image/upload/v1775739216/product-4_ibub6x.jpg",
+    "images": [
+      "https://res.cloudinary.com/dvmpnsfpo/image/upload/v1775739216/product-5_r8g0oi.jpg",
+      "https://res.cloudinary.com/dvmpnsfpo/image/upload/v1775739216/product-8_ej7z5c.jpg",
+      "https://res.cloudinary.com/dvmpnsfpo/image/upload/v1775739217/product-6_umlntv.jpg"
+    ],
+    "description": "A soft pastel pink cotton kurti with delicate neckline embroidery and subtle mirror work accents. Lightweight and breezy, this piece is ideal for summer days with a touch of Rajasthani charm.",
+    "fabric": "Cotton Blend",
+    "occasion": "Casual / Summer",
+    "work": "Embroidery & Mirror Work",
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "inStock": true,
+    "quantity": 5,
+    "color": "yellow",
+    "colorCode": "#FFC107",
+    "createdAt": "2026-04-09T19:26:23.342Z",
+    "__v": 0,
+    "updatedAt": "2026-04-11T14:53:24.416Z"
+  },
+  {
+    "_id": "69d78c2ca2fb8a7e708eab5f",
+    "name": "Ambar Neel – Full Sleeves Jaipuri Short Kurti",
+    "category": "Maxi Dress",
+    "price": 3499,
+    "originalPrice": 4999,
+    "image": "https://res.cloudinary.com/dvmpnsfpo/image/upload/v1775739217/product-6_umlntv.jpg",
+    "images": [
+      "https://res.cloudinary.com/dvmpnsfpo/image/upload/v1775739217/product-6_umlntv.jpg",
+      "https://res.cloudinary.com/dvmpnsfpo/image/upload/v1775738910/product-1_fqrvwd.jpg",
+      "https://res.cloudinary.com/dvmpnsfpo/image/upload/v1775738910/product-3_tzkmul.jpg"
+    ],
+    "badge": "Premium",
+    "description": "An opulent emerald green maxi dress with traditional gold bandhani-inspired prints and a rich gold border hem. This royal piece captures the grandeur of Rajasthani textiles in a modern flowing silhouette.",
+    "fabric": "Cotton Silk",
+    "occasion": "Festive / Wedding",
+    "work": "Bandhani Print & Gold Border",
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "inStock": true,
+    "quantity": 7,
+    "color": "green",
+    "colorCode": "#4CAF50",
+    "createdAt": "2026-04-09T19:26:23.342Z",
+    "__v": 0,
+    "updatedAt": "2026-04-12T12:31:34.479Z"
+  },
+  {
+    "_id": "69d78c2ca2fb8a7e708eab60",
+    "name": "Vanraagini – Short Cotton Kurti",
+    "category": "Cotton Kurti",
+    "price": 699,
+    "originalPrice": 1599,
+    "image": "https://res.cloudinary.com/dvmpnsfpo/image/upload/v1775735201/pic2_ecqkww.jpg",
+    "images": [
+      "https://res.cloudinary.com/dvmpnsfpo/image/upload/v1775735201/pic2_ecqkww.jpg",
+      "https://res.cloudinary.com/dvmpnsfpo/image/upload/v1775735200/pic4_aogmem.jpg",
+      "https://res.cloudinary.com/dvmpnsfpo/image/upload/v1775735201/pic3_jtihou.jpg"
+    ],
+    "badge": "Bestseller",
+    "description": "Fresh like the first touch of morning sunlight, Vanraagini brings nature’s melody to your wardrobe. Crafted in soft cotton, this lime-green short kurti features a delicate hand-block–style print of tiny white and blue butis—each motif adding a rhythmic, almost musical charm to the fabric. The square neckline and easy three-quarter sleeves give it a clean, graceful silhouette, perfect for warm days and unhurried moods",
+    "fabric": "Pure Cotton",
+    "occasion": "Daily Wear / Office",
+    "work": "Block Print",
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "inStock": true,
+    "quantity": 0,
+    "color": "red",
+    "colorCode": "#FF0000",
+    "createdAt": "2026-04-09T19:26:23.342Z",
+    "__v": 0,
+    "updatedAt": "2026-04-12T10:35:28.515Z"
+  },
+  {
+    "_id": "69d78c2ca2fb8a7e708eab61",
+    "name": "Gulaabo – Short Cotton Kurti",
+    "category": "Maxi Dress",
+    "price": 1599,
+    "originalPrice": 1999,
+    "image": "https://res.cloudinary.com/dvmpnsfpo/image/upload/v1775740178/pic3_c0phtl.jpg",
+    "images": [
+      "https://res.cloudinary.com/dvmpnsfpo/image/upload/v1775740178/pic3_c0phtl.jpg",
+      "https://res.cloudinary.com/dvmpnsfpo/image/upload/v1775740177/pic1_i50zw9.jpg",
+      "https://res.cloudinary.com/dvmpnsfpo/image/upload/v1775740179/pic4_lodzzw.jpg"
+    ],
+    "badge": "New",
+    "description": "Say hello to Gulaabo, a charming short cotton kurti crafted in a soft pink hue with delicate white detailing that adds the perfect touch of elegance. Light, breathable, and effortlessly stylish, this piece is designed for comfort without compromising on grace. Ideal for casual days, work wear, or weekend outings, Gulaabo brings a sweet, youthful glow to your everyday wardrobe.",
+    "fabric": "Rayon with Gold Print",
+    "occasion": "Party / Festive",
+    "work": "Floral Print & Gold Detailing",
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "inStock": true,
+    "quantity": 5,
+    "color": "red",
+    "colorCode": "#FF0000",
+    "createdAt": "2026-04-09T19:26:23.342Z",
+    "__v": 0,
+    "updatedAt": "2026-04-09T19:26:23.409Z"
+  },
+  {
+    "_id": "69d78c2ca2fb8a7e708eab62",
+    "name": "Kanak Lehar – Short Cotton Kurti",
+    "category": "Cotton Kurti",
+    "price": 1599,
+    "originalPrice": 2499,
+    "image": "https://res.cloudinary.com/dvmpnsfpo/image/upload/v1775740177/pic2_pyh8ul.jpg",
+    "images": [
+      "https://res.cloudinary.com/dvmpnsfpo/image/upload/v1775740177/pic2_pyh8ul.jpg",
+      "https://res.cloudinary.com/dvmpnsfpo/image/upload/v1775740177/pic2_pyh8ul.jpg",
+      "https://res.cloudinary.com/dvmpnsfpo/image/upload/v1775740177/pic2_pyh8ul.jpg"
+    ],
+    "description": "A soft pastel pink cotton kurti with delicate neckline embroidery and subtle mirror work accents. Lightweight and breezy, this piece is ideal for summer days with a touch of Rajasthani charm.",
+    "fabric": "Cotton Blend",
+    "occasion": "Casual / Summer",
+    "work": "Embroidery & Mirror Work",
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "inStock": true,
+    "quantity": 5,
+    "color": "yellow",
+    "colorCode": "#FFC107",
+    "createdAt": "2026-04-09T19:26:23.342Z",
+    "__v": 0,
+    "updatedAt": "2026-04-09T19:26:23.409Z"
+  },
+  {
+    "_id": "69d78c2ca2fb8a7e708eab63",
+    "name": "Ambar Neel – Full Sleeves Jaipuri Short Kurti",
+    "category": "Maxi Dress",
+    "price": 3499,
+    "originalPrice": 4999,
+    "image": "https://res.cloudinary.com/dvmpnsfpo/image/upload/v1775740177/pic2_pyh8ul.jpg",
+    "images": [
+      "https://res.cloudinary.com/dvmpnsfpo/image/upload/v1775740177/pic2_pyh8ul.jpg",
+      "https://res.cloudinary.com/dvmpnsfpo/image/upload/v1775740177/pic2_pyh8ul.jpg",
+      "https://res.cloudinary.com/dvmpnsfpo/image/upload/v1775740177/pic2_pyh8ul.jpg"
+    ],
+    "badge": "Premium",
+    "description": "An opulent emerald green maxi dress with traditional gold bandhani-inspired prints and a rich gold border hem. This royal piece captures the grandeur of Rajasthani textiles in a modern flowing silhouette.",
+    "fabric": "Cotton Silk",
+    "occasion": "Festive / Wedding",
+    "work": "Bandhani Print & Gold Border",
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "inStock": true,
+    "quantity": 2,
+    "color": "yellow",
+    "colorCode": "#FFC107",
+    "createdAt": "2026-04-09T19:26:23.342Z",
+    "__v": 0,
+    "updatedAt": "2026-04-11T20:20:24.847Z"
+  },
+  {
+    "_id": "69d78c2ca2fb8a7e708eab64",
+    "name": "Ambar Neel – Full Sleeves Jaipuri Short Kurti",
+    "category": "Maxi Dress",
+    "price": 3499,
+    "originalPrice": 4999,
+    "image": "https://res.cloudinary.com/dvmpnsfpo/image/upload/v1775740177/pic2_pyh8ul.jpg",
+    "images": [
+      "https://res.cloudinary.com/dvmpnsfpo/image/upload/v1775740177/pic2_pyh8ul.jpg",
+      "https://res.cloudinary.com/dvmpnsfpo/image/upload/v1775740177/pic2_pyh8ul.jpg",
+      "https://res.cloudinary.com/dvmpnsfpo/image/upload/v1775740177/pic2_pyh8ul.jpg"
+    ],
+    "badge": "Premium",
+    "description": "An opulent emerald green maxi dress with traditional gold bandhani-inspired prints and a rich gold border hem. This royal piece captures the grandeur of Rajasthani textiles in a modern flowing silhouette.",
+    "fabric": "Cotton Silk",
+    "occasion": "Festive / Wedding",
+    "work": "Bandhani Print & Gold Border",
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "inStock": true,
+    "quantity": 5,
+    "color": "green",
+    "colorCode": "#4CAF50",
+    "createdAt": "2026-04-09T19:26:23.342Z",
+    "__v": 0,
+    "updatedAt": "2026-04-09T19:26:23.409Z"
+  },
+  {
+    "_id": "69d78c2ca2fb8a7e708eab65",
+    "name": "Ambar Neel – Full Sleeves Jaipuri Short Kurti",
+    "category": "Maxi Dress",
+    "price": 3499,
+    "originalPrice": 4999,
+    "image": "https://res.cloudinary.com/dvmpnsfpo/image/upload/v1775740177/pic2_pyh8ul.jpg",
+    "images": [
+      "https://res.cloudinary.com/dvmpnsfpo/image/upload/v1775740177/pic2_pyh8ul.jpg",
+      "https://res.cloudinary.com/dvmpnsfpo/image/upload/v1775740177/pic2_pyh8ul.jpg",
+      "https://res.cloudinary.com/dvmpnsfpo/image/upload/v1775740177/pic2_pyh8ul.jpg"
+    ],
+    "badge": "Premium",
+    "description": "An opulent emerald green maxi dress with traditional gold bandhani-inspired prints and a rich gold border hem. This royal piece captures the grandeur of Rajasthani textiles in a modern flowing silhouette.",
+    "fabric": "Cotton Silk",
+    "occasion": "Festive / Wedding",
+    "work": "Bandhani Print & Gold Border",
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "inStock": true,
+    "quantity": 5,
+    "color": "pink",
+    "colorCode": "#E91E63",
+    "createdAt": "2026-04-09T19:26:23.342Z",
+    "__v": 0,
+    "updatedAt": "2026-04-09T19:26:23.409Z"
+  },
+  {
+    "_id": "69d78c2ca2fb8a7e708eab68",
+    "name": "Zoya – Festive Maxi",
+    "category": "Maxi Dress",
+    "price": 2899,
+    "originalPrice": 3499,
+    "image": "/assets/Products/product-3.jpg",
+    "images": [
+      "/assets/Products/product-3.jpg"
+    ],
+    "badge": "Limited Edition",
+    "description": "A deep maroon maxi dress with gold foil prints, perfect for evening gatherings.",
+    "fabric": "Rayon Silk",
+    "occasion": "Party / Festive",
+    "work": "Foil Print",
+    "sizes": [
+      "M",
+      "L",
+      "XL"
+    ],
+    "inStock": true,
+    "quantity": 4,
+    "color": "red",
+    "colorCode": "#800000",
+    "createdAt": "2026-04-09T19:26:23.342Z",
+    "__v": 0,
+    "updatedAt": "2026-04-09T19:26:23.409Z"
+  },
+  {
+    "_id": "69d78c2ca2fb8a7e708eab69",
+    "name": "Saanvi – Co-ord Set",
+    "category": "Co-ord Set",
+    "price": 1899,
+    "originalPrice": 2599,
+    "image": "/assets/Products/product-4.jpg",
+    "images": [
+      "/assets/Products/product-4.jpg"
+    ],
+    "description": "Modern ethnic co-ord set featuring a short tunic and tulip pants in mustard yellow.",
+    "fabric": "Cotton Blend",
+    "occasion": "Casual / Summer",
+    "work": "Solid with Border",
+    "sizes": [
+      "S",
+      "M",
+      "L"
+    ],
+    "inStock": true,
+    "quantity": 6,
+    "color": "yellow",
+    "colorCode": "#FFD700",
+    "createdAt": "2026-04-09T19:26:23.342Z",
+    "__v": 0,
+    "updatedAt": "2026-04-11T20:02:07.898Z"
+  },
+  {
+    "_id": "69d78c2ca2fb8a7e708eab6a",
+    "name": "Riya – Floral Short Kurti",
+    "category": "Cotton Kurti",
+    "price": 550,
+    "originalPrice": 999,
+    "image": "/assets/Product1/pic1.jpeg",
+    "images": [
+      "/assets/Product1/pic1.jpeg"
+    ],
+    "badge": "Sale",
+    "description": "Budget-friendly floral kurti for a fresh summer look.",
+    "fabric": "Pure Cotton",
+    "occasion": "Daily Wear / Office",
+    "work": "Digital Print",
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "inStock": true,
+    "quantity": 15,
+    "color": "pink",
+    "colorCode": "#FFC0CB",
+    "createdAt": "2026-04-09T19:26:23.342Z",
+    "__v": 0,
+    "updatedAt": "2026-04-09T19:26:23.410Z"
+  },
+  {
+    "_id": "69d78c2ca2fb8a7e708eab6b",
+    "name": "Kaira – Layered Anarkali",
+    "category": "Anarkali",
+    "price": 4899,
+    "originalPrice": 6500,
+    "image": "/assets/Product2/pic1.jpeg",
+    "images": [
+      "/assets/Product2/pic1.jpeg"
+    ],
+    "badge": "Premium",
+    "description": "Double-layered Anarkali in sage green with heavy Gota Patti work on the yoke.",
+    "fabric": "Cotton Silk",
+    "occasion": "Festive / Wedding",
+    "work": "Gota Patti",
+    "sizes": [
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "inStock": true,
+    "quantity": 0,
+    "color": "green",
+    "colorCode": "#8FBC8F",
+    "createdAt": "2026-04-09T19:26:23.342Z",
+    "__v": 0,
+    "updatedAt": "2026-04-11T18:52:33.783Z"
+  },
+  {
+    "_id": "69d78c2ca2fb8a7e708eab6c",
+    "name": "Ishani – Geometric Maxi",
+    "category": "Maxi Dress",
+    "price": 1299,
+    "originalPrice": 1899,
+    "image": "/assets/Product3/pic1.jpeg",
+    "images": [
+      "/assets/Product3/pic1.jpeg"
+    ],
+    "description": "Contemporary geometric prints on a breathable cotton base for weekend brunches.",
+    "fabric": "Pure Cotton",
+    "occasion": "Casual / Summer",
+    "work": "Geometric Print",
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "inStock": true,
+    "quantity": 8,
+    "color": "black",
+    "colorCode": "#000000",
+    "createdAt": "2026-04-09T19:26:23.342Z",
+    "__v": 0,
+    "updatedAt": "2026-04-09T19:26:23.410Z"
+  },
+  {
+    "_id": "69d78c2ca2fb8a7e708eab6d",
+    "name": "Diya – Velvet Touch Kurti",
+    "category": "Cotton Kurti",
+    "price": 2200,
+    "originalPrice": 3200,
+    "image": "/assets/Product4/pic1.jpeg",
+    "images": [
+      "/assets/Product4/pic1.jpeg"
+    ],
+    "badge": "Bestseller",
+    "description": "Luxury cotton with a velvet finish, featuring hand-embroidery on the cuffs.",
+    "fabric": "Cotton Velvet",
+    "occasion": "Party / Festive",
+    "work": "Hand Embroidery",
+    "sizes": [
+      "M",
+      "L",
+      "XL"
+    ],
+    "inStock": true,
+    "quantity": 5,
+    "color": "purple",
+    "colorCode": "#800080",
+    "createdAt": "2026-04-09T19:26:23.342Z",
+    "__v": 0,
+    "updatedAt": "2026-04-09T19:26:23.410Z"
+  },
+  {
+    "_id": "69d78c2ca2fb8a7e708eab6e",
+    "name": "Aanya – Office Co-ord",
+    "category": "Co-ord Set",
+    "price": 2199,
+    "originalPrice": 2999,
+    "image": "/assets/Product1/pic2.jpeg",
+    "images": [
+      "/assets/Product1/pic2.jpeg"
+    ],
+    "description": "Structured co-ord set in slate grey, blending professional cuts with ethnic comfort.",
+    "fabric": "Linen Cotton",
+    "occasion": "Daily Wear / Office",
+    "work": "Solid",
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "inStock": true,
+    "quantity": 4,
+    "color": "grey",
+    "colorCode": "#808080",
+    "createdAt": "2026-04-09T19:26:23.342Z",
+    "__v": 0,
+    "updatedAt": "2026-04-09T19:26:23.410Z"
+  },
+  {
+    "_id": "69d78c2ca2fb8a7e708eab6f",
+    "name": "Vanya – Royal Blue Kurti",
+    "category": "Cotton Kurti",
+    "price": 1150,
+    "originalPrice": 1699,
+    "image": "/assets/Product2/pic2.jpeg",
+    "images": [
+      "/assets/Product2/pic2.jpeg"
+    ],
+    "description": "A classic royal blue kurti with silver piping and button details.",
+    "fabric": "Pure Cotton",
+    "occasion": "Daily Wear / Office",
+    "work": "Silver Piping",
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "inStock": true,
+    "quantity": 12,
+    "color": "blue",
+    "colorCode": "#0000FF",
+    "createdAt": "2026-04-09T19:26:23.342Z",
+    "__v": 0,
+    "updatedAt": "2026-04-09T19:26:23.410Z"
+  }
+]
