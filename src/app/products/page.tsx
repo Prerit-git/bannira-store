@@ -24,6 +24,14 @@ function ProductsList() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isSortOpen, setIsSortOpen] = useState(false);
 
+  // --- URL CLEANING LOGIC START ---
+  const clearUrlParams = () => {
+    if (searchParams.get("search") || searchParams.get("category")) {
+      router.push("/products", { scroll: false });
+    }
+  };
+  // --- URL CLEANING LOGIC END ---
+
   useEffect(() => {
     if (isFilterOpen || isSortOpen) {
       document.body.style.overflow = "hidden";
@@ -47,6 +55,7 @@ function ProductsList() {
   ];
 
   const togglePriceFilter = (range: { label: string; min: number; max: number }) => {
+    clearUrlParams(); // Clean URL on filter change
     setSelectedPriceRanges((prev) =>
       prev.some((p) => p.label === range.label)
         ? prev.filter((p) => p.label !== range.label)
@@ -59,9 +68,7 @@ function ProductsList() {
     selected: T[],
     setSelected: React.Dispatch<React.SetStateAction<T[]>>,
   ) => {
-    if (searchParams.get("search") || searchParams.get("category")) {
-      router.push("/products");
-    }
+    clearUrlParams(); // Clean URL on filter change
     setSelected((prev) =>
       prev.includes(value as any)
         ? prev.filter((v) => v !== value)
