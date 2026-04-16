@@ -9,22 +9,14 @@ import {
   Heart,
   UserCircle,
   LogOut,
-  Search as SearchIcon,
   ShoppingBag,
-  Clock,
-  LayoutGrid,
-  ChevronRight,
-  Sparkles,
-  HelpCircle,
-  Truck,
-  Shirt,
-  PhoneCall,
-  UserPlus,
   Package,
   History,
   Store,
-  Layers,
-  MessageCircle,
+  Shirt,
+  Sparkles,
+  HelpCircle,
+  UserPlus,
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
@@ -33,6 +25,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useWishlist } from "@/context/WishlistContext";
 import { useCart } from "@/context/CartContext";
 import { InstagramLogo, WhatsappLogo } from "phosphor-react";
+import Search from "./Search";
 
 interface NavbarProps {
   isBarVisible?: boolean;
@@ -43,13 +36,12 @@ export default function Navbar({ isBarVisible = true }: NavbarProps) {
   const router = useRouter();
   const { wishlist } = useWishlist();
   const { cart } = useCart();
-  const { isLoggedIn, logout, setRedirectPath, user } = useAuth();
+  const { isLoggedIn, logout, user } = useAuth();
 
   const wishlistCount = wishlist.length;
   const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
 
   const [scrolled, setScrolled] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
 
@@ -72,20 +64,20 @@ export default function Navbar({ isBarVisible = true }: NavbarProps) {
   }, []);
 
   useEffect(() => {
-    document.body.style.overflow = menuOpen || searchOpen ? "hidden" : "";
-  }, [menuOpen, searchOpen]);
+    document.body.style.overflow = menuOpen ? "hidden" : "";
+  }, [menuOpen]);
 
   const confirmLogout = () => {
-  setLogoutConfirmOpen(true);
-};
+    setLogoutConfirmOpen(true);
+  };
 
-const handleLogoutAction = (confirm: boolean) => {
-  if (confirm) {
-    logout();
-    setMenuOpen(false);
-  }
-  setLogoutConfirmOpen(false);
-};
+  const handleLogoutAction = (confirm: boolean) => {
+    if (confirm) {
+      logout();
+      setMenuOpen(false);
+    }
+    setLogoutConfirmOpen(false);
+  };
 
   const isHome = pathname === "/";
   const navbarBg = isHome
@@ -96,92 +88,43 @@ const handleLogoutAction = (confirm: boolean) => {
 
   return (
     <>
-      <header
-        className={`fixed ${topSpacing} left-0 w-full z-50 transition-all duration-500 ${navbarBg}`}
-      >
+      <header className={`fixed ${topSpacing} left-0 w-full z-50 transition-all duration-500 ${navbarBg}`}>
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-          <Link
-            href={"/"}
-            className={`transition-all duration-500 ${scrolled ? "scale-75" : "scale-75"}`}
-          >
-            <Image
-              src={"/bannira_web_logo2.png"}
-              alt="logo"
-              width={180}
-              height={80}
-              priority
-              className="object-cover w-auto h-auto -ml-2 md:ml-0"
-            />
+          <Link href={"/"} className={`transition-all duration-500 ${scrolled ? "scale-75" : "scale-75"}`}>
+            <Image src={"/bannira_web_logo2.png"} alt="logo" width={180} height={80} priority className="object-cover w-auto h-auto -ml-2 md:ml-0" />
           </Link>
 
           <div className="hidden md:flex flex-1 px-10">
-            <div className="relative w-full max-w-xl mx-auto group">
-              <input
-                type="search"
-                placeholder="Search kurtis, dresses..."
-                className="w-full bg-white/10 border border-white/20 rounded-full py-2.5 pl-12 pr-4 text-white placeholder-white/60 focus:bg-white/20 focus:ring-2 focus:ring-[#D4AF37] outline-none transition-all"
-              />
-              <SearchIcon
-                size={18}
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-white/70 group-focus-within:text-[#D4AF37] transition-colors"
-              />
-            </div>
+            <Search />
           </div>
 
           <div className="hidden md:flex items-center gap-8">
             <div className="relative group flex flex-col items-center cursor-pointer">
-              <User
-                size={24}
-                className="text-white group-hover:text-[#D4AF37] transition-colors"
-              />
+              <User size={24} className="text-white group-hover:text-[#D4AF37] transition-colors" />
               <span className="text-[10px] uppercase tracking-widest text-white mt-1">
                 {isLoggedIn ? user?.name : `Account`}
               </span>
-
               <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-2xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 border border-gray-100 overflow-hidden">
                 <div className="p-5">
                   {isLoggedIn ? (
                     <div className="space-y-1">
                       <div className="pb-3 border-b border-gray-50 mb-2 text-left">
-                        {/* <p className="text-[10px] font-black uppercase text-stone-400 tracking-widest">
-                          Hello,
-                        </p> */}
-                        <p className="text-sm font-bold text-stone-800 truncate">
-                          {user?.name || user?.email}
-                        </p>
-                        <p className="text-xs text-stone-600 truncate">
-                          {user?.email}
-                        </p>
+                        <p className="text-sm font-bold text-stone-800 truncate">{user?.name || user?.email}</p>
+                        <p className="text-xs text-stone-600 truncate">{user?.email}</p>
                       </div>
-                      <Link
-                        href="/profile"
-                        className="flex items-center gap-3 py-3 text-sm text-gray-700 hover:text-[#7B2D0A] transition-colors"
-                      >
+                      <Link href="/profile" className="flex items-center gap-3 py-3 text-sm text-gray-700 hover:text-[#7B2D0A] transition-colors">
                         <UserCircle size={18} /> Profile
                       </Link>
-                      <Link
-                        href="/profile/orders"
-                        className="flex items-center justify-between py-3 text-sm text-gray-700 hover:text-[#7B2D0A] transition-colors"
-                      >
-                        <div className="flex items-center gap-3">
-                          <Package size={18} /> My Orders
-                        </div>
-                        <span className="text-[8px] bg-stone-100 px-2 py-0.5 rounded-full font-black uppercase">
-                          Track
-                        </span>
+                      <Link href="/profile/orders" className="flex items-center justify-between py-3 text-sm text-gray-700 hover:text-[#7B2D0A] transition-colors">
+                        <div className="flex items-center gap-3"><Package size={18} /> My Orders</div>
+                        <span className="text-[8px] bg-stone-100 px-2 py-0.5 rounded-full font-black uppercase">Track</span>
                       </Link>
-                      <button
-                        onClick={confirmLogout}
-                        className="flex items-center gap-3 py-3 w-full text-sm text-red-600 font-bold hover:bg-red-50 rounded-lg transition-all mt-2"
-                      >
+                      <button onClick={confirmLogout} className="flex items-center gap-3 py-3 w-full text-sm text-red-600 font-bold hover:bg-red-50 rounded-lg transition-all mt-2">
                         <LogOut size={18} /> Logout
                       </button>
                     </div>
                   ) : (
-                    <button
-                      onClick={() => router.push("/login")}
-                      className="w-full bg-[#7B2D0A] text-white py-3 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all"
-                    >
+                    <button onClick={() => router.push("/login")} className="w-full bg-[#7B2D0A] text-white py-3 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all">
                       <UserPlus size={16} className="inline mr-2" /> Login / Sign Up
                     </button>
                   )}
@@ -189,79 +132,38 @@ const handleLogoutAction = (confirm: boolean) => {
               </div>
             </div>
 
-            <button
-              onClick={(e) => handleProtectedNavigation(e, "/wishlist")}
-              className="flex flex-col items-center relative group text-white"
-            >
-              <Heart
-                size={24}
-                className="group-hover:text-[#D4AF37] transition-colors"
-              />
+            <button onClick={(e) => handleProtectedNavigation(e, "/wishlist")} className="flex flex-col items-center relative group text-white">
+              <Heart size={24} className="group-hover:text-[#D4AF37] transition-colors" />
               {isLoggedIn && wishlistCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-[#D4AF37] text-black text-[10px] font-bold h-4 w-4 flex items-center justify-center rounded-full shadow-md">
-                  {wishlistCount}
-                </span>
+                <span className="absolute -top-2 -right-2 bg-[#D4AF37] text-black text-[10px] font-bold h-4 w-4 flex items-center justify-center rounded-full shadow-md">{wishlistCount}</span>
               )}
-              <span className="text-[10px] uppercase tracking-widest mt-1">
-                Wishlist
-              </span>
+              <span className="text-[10px] uppercase tracking-widest mt-1">Wishlist</span>
             </button>
 
-            <button
-              onClick={(e) => handleProtectedNavigation(e, "/cart")}
-              className="flex flex-col items-center relative group text-white"
-            >
-              <ShoppingBag
-                size={24}
-                className="group-hover:text-[#D4AF37] transition-colors"
-              />
+            <button onClick={(e) => handleProtectedNavigation(e, "/cart")} className="flex flex-col items-center relative group text-white">
+              <ShoppingBag size={24} className="group-hover:text-[#D4AF37] transition-colors" />
               {isLoggedIn && cartCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-[#D4AF37] text-black text-[10px] font-bold h-4 w-4 flex items-center justify-center rounded-full shadow-md">
-                  {cartCount}
-                </span>
+                <span className="absolute -top-2 -right-2 bg-[#D4AF37] text-black text-[10px] font-bold h-4 w-4 flex items-center justify-center rounded-full shadow-md">{cartCount}</span>
               )}
-              <span className="text-[10px] uppercase tracking-widest mt-1">
-                Bag
-              </span>
+              <span className="text-[10px] uppercase tracking-widest mt-1">Bag</span>
             </button>
           </div>
 
           <div className="flex md:hidden items-center gap-2">
-            <button
-              onClick={() => setSearchOpen(true)}
-              className="p-2 text-white"
-            >
-              <SearchIcon size={22} />
-            </button>
-            <button
-              onClick={(e) => handleProtectedNavigation(e, "/wishlist")}
-              className="flex flex-col items-center relative group text-white"
-            >
-              <Heart
-                size={24}
-                className="group-hover:text-[#D4AF37] transition-colors"
-              />
+            <Search />
+            <button onClick={(e) => handleProtectedNavigation(e, "/wishlist")} className="flex flex-col items-center relative group text-white p-2">
+              <Heart size={24} />
               {isLoggedIn && wishlistCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-[#D4AF37] text-black text-[10px] font-bold h-3.5 w-3.5 flex items-center justify-center rounded-full shadow-md">
-                  {wishlistCount}
-                </span>
+                <span className="absolute -top-1 -right-1 bg-[#D4AF37] text-black text-[10px] font-bold h-3.5 w-3.5 flex items-center justify-center rounded-full shadow-md">{wishlistCount}</span>
               )}
             </button>
-            <button
-              onClick={(e) => handleProtectedNavigation(e, "/cart")}
-              className="relative p-2 text-white"
-            >
+            <button onClick={(e) => handleProtectedNavigation(e, "/cart")} className="relative p-2 text-white">
               <ShoppingBag size={22} />
               {isLoggedIn && cartCount > 0 && (
-                <span className="absolute top-1 right-1 bg-[#D4AF37] text-black text-[9px] font-bold h-3.5 w-3.5 flex items-center justify-center rounded-full">
-                  {cartCount}
-                </span>
+                <span className="absolute top-1 right-1 bg-[#D4AF37] text-black text-[9px] font-bold h-3.5 w-3.5 flex items-center justify-center rounded-full">{cartCount}</span>
               )}
             </button>
-            <button
-              onClick={() => setMenuOpen(true)}
-              className="p-2 text-white"
-            >
+            <button onClick={() => setMenuOpen(true)} className="p-2 text-white">
               <Menu size={24} />
             </button>
           </div>
@@ -271,142 +173,55 @@ const handleLogoutAction = (confirm: boolean) => {
       <AnimatePresence>
         {menuOpen && (
           <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setMenuOpen(false)}
-              className="fixed inset-0 z-[90] bg-black/40 backdrop-blur-sm"
-            />
-
-            <motion.div
-              initial={{ x: "100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "100%" }}
-              transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="fixed top-0 right-0 h-full w-[85%] max-w-sm bg-[#FDFCFB] z-[100] flex flex-col shadow-2xl"
-            >
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setMenuOpen(false)} className="fixed inset-0 z-[90] bg-black/40 backdrop-blur-sm" />
+            <motion.div initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ type: "spring", damping: 30, stiffness: 300 }} className="fixed top-0 right-0 h-full w-[85%] max-w-sm bg-[#FDFCFB] z-[100] flex flex-col shadow-2xl">
               <div className="p-6 flex justify-between items-center bg-white border-b border-stone-100">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-stone-900 rounded-full flex items-center justify-center text-[#D4AF37]">
-                    <UserCircle size={24} strokeWidth={1.5} />
-                  </div>
+                  <div className="w-10 h-10 bg-stone-900 rounded-full flex items-center justify-center text-[#D4AF37]"><UserCircle size={24} /></div>
                   <div className="min-w-0">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-stone-400">
-                      Account
-                    </p>
-                    <p className="text-xs font-bold text-stone-900 truncate">
-                      {isLoggedIn ? (user?.name || "Bannira Member") : "Guest User"}
-                    </p>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-stone-400">Account</p>
+                    <p className="text-xs font-bold text-stone-900 truncate">{isLoggedIn ? (user?.name || "Bannira Member") : "Guest User"}</p>
                   </div>
                 </div>
-                <button
-                  onClick={() => setMenuOpen(false)}
-                  className="w-10 h-10 flex items-center justify-center bg-stone-50 rounded-full text-stone-900 active:scale-90 transition-all"
-                >
-                  <X size={20} />
-                </button>
+                <button onClick={() => setMenuOpen(false)} className="w-10 h-10 flex items-center justify-center bg-stone-50 rounded-full text-stone-900 transition-all"><X size={20} /></button>
               </div>
-
               <div className="flex-1 overflow-y-auto px-6 py-8 space-y-10 no-scrollbar">
                 {!isLoggedIn && (
                   <div className="bg-[#1C1C1C] rounded-3xl p-6 text-white text-center">
                     <p className="text-sm font-serif italic mb-4">Discover Latest Arrivals</p>
-                    <button
-                      onClick={() => {
-                        setMenuOpen(false);
-                        router.push("/login");
-                      }}
-                      className="w-full bg-[#D4AF37] text-black py-3 rounded-xl font-black uppercase text-[10px] tracking-widest"
-                    >
-                      <UserCircle size={16} className="inline mr-2" /> Sign In
-                    </button>
+                    <button onClick={() => { setMenuOpen(false); router.push("/login"); }} className="w-full bg-[#D4AF37] text-black py-3 rounded-xl font-black uppercase text-[10px] tracking-widest"><UserCircle size={16} className="inline mr-2" /> Sign In</button>
                   </div>
                 )}
-
                 <section className="space-y-4">
-                  <p className="text-[10px] font-black uppercase tracking-[0.4em] text-stone-300 px-2">
-                    Menu
-                  </p>
+                  <p className="text-[10px] font-black uppercase tracking-[0.4em] text-stone-300 px-2">Menu</p>
                   <div className="bg-white rounded-3xl border border-stone-100 overflow-hidden">
-                    <DrawerLink
-                      href="/products"
-                      icon={<Store size={18} />}
-                      label="Shop All"
-                      onClick={() => setMenuOpen(false)}
-                    />
-                    <DrawerLink
-                      href="/profile/orders"
-                      icon={<History size={18} />}
-                      label="Track Orders"
-                      onClick={() => setMenuOpen(false)}
-                    />
-                    <DrawerLink
-                      href="/wishlist"
-                      icon={<Heart size={18} />}
-                      label="My Wishlist"
-                      onClick={() => setMenuOpen(false)}
-                    />
+                    <DrawerLink href="/products" icon={<Store size={18} />} label="Shop All" onClick={() => setMenuOpen(false)} />
+                    <DrawerLink href="/profile/orders" icon={<History size={18} />} label="Track Orders" onClick={() => setMenuOpen(false)} />
+                    <DrawerLink href="/wishlist" icon={<Heart size={18} />} label="My Wishlist" onClick={() => setMenuOpen(false)} />
                   </div>
                 </section>
-
                 <section className="space-y-4">
-                  <p className="text-[10px] font-black uppercase tracking-[0.4em] text-stone-300 px-2">
-                    Categories
-                  </p>
+                  <p className="text-[10px] font-black uppercase tracking-[0.4em] text-stone-300 px-2">Categories</p>
                   <div className="bg-white rounded-3xl border border-stone-100 overflow-hidden">
-                    <DrawerLink
-                      href="/products?category=kurtis"
-                      icon={<Shirt size={18} />}
-                      label="Premium Kurtis"
-                      onClick={() => setMenuOpen(false)}
-                    />
-                    <DrawerLink
-                      href="/products?category=dresses"
-                      icon={<Sparkles size={18} />}
-                      label="Festive Wear"
-                      onClick={() => setMenuOpen(false)}
-                    />
+                    <DrawerLink href="/products?category=kurtis" icon={<Shirt size={18} />} label="Premium Kurtis" onClick={() => setMenuOpen(false)} />
+                    <DrawerLink href="/products?category=dresses" icon={<Sparkles size={18} />} label="Festive Wear" onClick={() => setMenuOpen(false)} />
                   </div>
                 </section>
-
                 <div className="p-6 bg-stone-50 rounded-3xl border border-stone-100 flex items-center justify-between group">
                   <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-stone-900 shadow-sm border border-stone-100">
-                      <HelpCircle size={18} />
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-stone-900">Support</p>
-                      <p className="text-[9px] text-stone-400 font-bold uppercase italic">Contact Bannira</p>
-                    </div>
+                    <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-stone-900 shadow-sm border border-stone-100"><HelpCircle size={18} /></div>
+                    <div><p className="text-[10px] font-black uppercase tracking-widest text-stone-900">Support</p><p className="text-[9px] text-stone-400 font-bold uppercase italic">Contact Bannira</p></div>
                   </div>
-                  <ChevronRight size={16} className="text-stone-300" />
                 </div>
               </div>
-
               <div className="p-6 bg-white border-t border-stone-100 space-y-6">
-                {isLoggedIn && (
-                  <button
-                    onClick={confirmLogout}
-                    className="w-full flex items-center justify-center gap-3 py-4 bg-red-50 text-red-500 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-red-100 active:scale-95 transition-all"
-                  >
-                    <LogOut size={16} />
-                    Sign Out
-                  </button>
-                )}
-
+                {isLoggedIn && <button onClick={confirmLogout} className="w-full flex items-center justify-center gap-3 py-4 bg-red-50 text-red-500 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-red-100 transition-all"><LogOut size={16} /> Sign Out</button>}
                 <div className="flex justify-between items-center">
                   <div className="flex gap-5">
-                    <Link href="https://instagram.com" className="text-stone-400 hover:text-black transition-colors">
-                      <InstagramLogo size={18} />
-                    </Link>
-                    <Link href="https://wa.me/yournumber" className="text-stone-400 hover:text-black transition-colors">
-                      <WhatsappLogo size={18} />
-                    </Link>
+                    <Link href="https://instagram.com" className="text-stone-400 hover:text-black transition-colors"><InstagramLogo size={18} /></Link>
+                    <Link href="https://wa.me/yournumber" className="text-stone-400 hover:text-black transition-colors"><WhatsappLogo size={18} /></Link>
                   </div>
-                  <p className="text-[9px] font-black text-stone-300 tracking-[0.2em] uppercase">
-                    Bannira © 2026
-                  </p>
+                  <p className="text-[9px] font-black text-stone-300 tracking-[0.2em] uppercase">Bannira © 2026</p>
                 </div>
               </div>
             </motion.div>
@@ -414,95 +229,20 @@ const handleLogoutAction = (confirm: boolean) => {
         )}
       </AnimatePresence>
 
-      {/* --- LOGOUT CONFIRMATION MODAL --- */}
-<AnimatePresence>
-  {logoutConfirmOpen && (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center p-6">
-      {/* Backdrop */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        onClick={() => setLogoutConfirmOpen(false)}
-        className="absolute inset-0 bg-black/60 backdrop-blur-md"
-      />
-
-      {/* Modal Card */}
-      <motion.div
-        initial={{ scale: 0.9, opacity: 0, y: 20 }}
-        animate={{ scale: 1, opacity: 1, y: 0 }}
-        exit={{ scale: 0.9, opacity: 0, y: 20 }}
-        className="relative bg-white w-full max-w-sm rounded-[2.5rem] overflow-hidden shadow-2xl p-8 md:p-10 text-center border border-stone-100"
-      >
-        <div className="w-20 h-20 bg-stone-50 rounded-full flex items-center justify-center mx-auto mb-6 text-red-500">
-          <LogOut size={36} strokeWidth={1.5} />
-        </div>
-
-        <h3 className="text-2xl font-serif text-stone-900 mb-3 italic">
-          Leaving so soon?
-        </h3>
-        <p className="text-[11px] font-bold text-stone-400 uppercase tracking-widest leading-relaxed mb-10">
-          Are you sure you want to log out of your Bannira account?
-        </p>
-
-        <div className="flex flex-col gap-3">
-          <button
-            onClick={() => handleLogoutAction(true)}
-            className="w-full py-4 bg-black text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-black/10 hover:bg-[#7B2D0A] transition-all active:scale-95"
-          >
-            Yes, Sign Me Out
-          </button>
-          
-          <button
-            onClick={() => handleLogoutAction(false)}
-            className="w-full py-4 bg-white text-stone-500 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] border border-stone-100 hover:bg-stone-50 transition-all active:scale-95"
-          >
-            No, Stay Logged In
-          </button>
-        </div>
-
-        <div className="mt-8 flex justify-center gap-1.5 opacity-20">
-          <div className="w-1 h-1 rounded-full bg-stone-400" />
-          <div className="w-1 h-1 rounded-full bg-stone-400" />
-          <div className="w-1 h-1 rounded-full bg-stone-400" />
-        </div>
-      </motion.div>
-    </div>
-  )}
-</AnimatePresence>
-
       <AnimatePresence>
-        {searchOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl flex flex-col p-6"
-          >
-            <div className="flex justify-end">
-              <button
-                onClick={() => setSearchOpen(false)}
-                className="text-white p-2"
-              >
-                <X size={32} />
-              </button>
-            </div>
-            <div className="mt-20 relative px-4">
-              <p className="text-[#D4AF37] text-[10px] font-black uppercase tracking-[0.4em] mb-4">
-                Search Bannira
-              </p>
-              <input
-                autoFocus
-                type="search"
-                placeholder="Search Kurtis, Dresses, etc.."
-                className="w-full bg-transparent border-b border-white/30 py-4 text-2xl font-serif italic text-white outline-none focus:border-[#D4AF37]"
-              />
-              <SearchIcon
-                size={24}
-                className="absolute right-4 top-[70%] -translate-y-1/2 text-white/50"
-              />
-            </div>
-          </motion.div>
+        {logoutConfirmOpen && (
+          <div className="fixed inset-0 z-[999] flex items-center justify-center p-6">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setLogoutConfirmOpen(false)} className="absolute inset-0 bg-black/60 backdrop-blur-md" />
+            <motion.div initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} className="relative bg-white w-full max-w-sm rounded-[2.5rem] overflow-hidden shadow-2xl p-8 text-center border border-stone-100">
+              <div className="w-20 h-20 bg-stone-50 rounded-full flex items-center justify-center mx-auto mb-6 text-red-500"><LogOut size={36} /></div>
+              <h3 className="text-2xl font-serif text-stone-900 mb-3 italic">Leaving so soon?</h3>
+              <p className="text-[11px] font-bold text-stone-400 uppercase tracking-widest leading-relaxed mb-10">Are you sure you want to log out of your Bannira account?</p>
+              <div className="flex flex-col gap-3">
+                <button onClick={() => handleLogoutAction(true)} className="w-full py-4 bg-black text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all">Yes, Sign Me Out</button>
+                <button onClick={() => handleLogoutAction(false)} className="w-full py-4 bg-white text-stone-500 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] border border-stone-100 transition-all">No, Stay Logged In</button>
+              </div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </>
@@ -511,18 +251,11 @@ const handleLogoutAction = (confirm: boolean) => {
 
 function DrawerLink({ href, icon, label, onClick }: any) {
   return (
-    <Link
-      href={href}
-      onClick={onClick}
-      className="flex items-center justify-between p-4 bg-white border border-stone-50 rounded-2xl active:bg-stone-100 transition-all"
-    >
+    <Link href={href} onClick={onClick} className="flex items-center justify-between p-4 bg-white border border-stone-50 rounded-2xl active:bg-stone-100 transition-all">
       <div className="flex items-center gap-4">
         <div className="text-stone-400">{icon}</div>
-        <span className="text-sm font-bold text-stone-800 uppercase tracking-tight">
-          {label}
-        </span>
+        <span className="text-sm font-bold text-stone-800 uppercase tracking-tight">{label}</span>
       </div>
-      <ChevronRight size={16} className="text-stone-200" />
     </Link>
   );
 }

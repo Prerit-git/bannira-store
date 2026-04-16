@@ -1,19 +1,23 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import { Filter, ArrowDownUp, X, Check } from "lucide-react";
 import ProductCard from "@/components/ProductCard";
 import { useProducts } from "@/context/ProductContext";
 import ProductsSkeleton from "@/components/ProductsSkeleton";
+import { useRouter, useSearchParams } from "next/navigation";
 
-export default function ProductsPage() {
+function ProductsList() {
+  const router = useRouter();
   const { allProducts, isLoading, error } = useProducts();
+  const searchParams = useSearchParams();
+  const searchQuery = searchParams.get("search")?.toLowerCase() || "";
+  const searchCategory = searchParams.get("category");
   
   const [selectedCategory, setSelectedCategory] = useState<string[]>([]);
   const [selectedSize, setSelectedSize] = useState<string[]>([]);
   const [selectedColor, setSelectedColor] = useState<string[]>([]);
-  const [priceRange, setPriceRange] = useState({ min: 0, max: 100000 });
   const [selectedPriceRanges, setSelectedPriceRanges] = useState<any[]>([]);
   const [sortOption, setSortOption] = useState<string>("latest");
 
@@ -43,18 +47,21 @@ export default function ProductsPage() {
   ];
 
   const togglePriceFilter = (range: { label: string; min: number; max: number }) => {
-  setSelectedPriceRanges((prev) =>
-    prev.some((p) => p.label === range.label)
-      ? prev.filter((p) => p.label !== range.label)
-      : [...prev, range]
-  );
-};
+    setSelectedPriceRanges((prev) =>
+      prev.some((p) => p.label === range.label)
+        ? prev.filter((p) => p.label !== range.label)
+        : [...prev, range]
+    );
+  };
 
   const toggleFilter = <T extends string | number>(
     value: T,
     selected: T[],
     setSelected: React.Dispatch<React.SetStateAction<T[]>>,
   ) => {
+    if (searchParams.get("search") || searchParams.get("category")) {
+      router.push("/products");
+    }
     setSelected((prev) =>
       prev.includes(value as any)
         ? prev.filter((v) => v !== value)
@@ -66,34 +73,43 @@ export default function ProductsPage() {
     setSelectedCategory([]);
     setSelectedSize([]);
     setSelectedColor([]);
-    setPriceRange({ min: 0, max: 100000 });
     setSelectedPriceRanges([]);
+    router.push("/products");
   };
 
   useEffect(() => {
-  window.scrollTo({
-    top: 0,
-    behavior: "smooth",
-  });
-}, [selectedCategory, selectedSize, selectedColor, selectedPriceRanges, sortOption]);
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }, [selectedCategory, selectedSize, selectedColor, selectedPriceRanges, sortOption]);
 
   const activeFiltersCount =
     selectedCategory.length +
     selectedSize.length +
     selectedColor.length +
-    // (priceRange.min > 0 || priceRange.max < 100000 ? 1 : 0);
     selectedPriceRanges.length;
 
   let filteredProducts = allProducts.filter((product) => {
-    const categoryMatch = selectedCategory.length === 0 || selectedCategory.includes(product.category);
+    const searchWords = searchQuery.toLowerCase().split(/\s+/).filter(Boolean);
+    const matchesSearch = searchWords.length === 0 || searchWords.some(word => 
+      product.name.toLowerCase().includes(word) ||
+      product.category.toLowerCase().includes(word) ||
+      (product.color && product.color.toLowerCase().includes(word))
+    );
+
+    const categoryToMatch = searchCategory ? [searchCategory] : selectedCategory;
+    const categoryMatch = 
+      categoryToMatch.length === 0 || 
+      categoryToMatch.some(cat => cat.toLowerCase() === product.category.toLowerCase());
+
     const sizeMatch = selectedSize.length === 0 || product.sizes?.some((s: any) => selectedSize.includes(s));
     const colorMatch = selectedColor.length === 0 || selectedColor.includes(product.color);
-    // const priceMatch = product.price >= priceRange.min && product.price <= priceRange.max;
     const priceMatch = 
-    selectedPriceRanges.length === 0 || 
-    selectedPriceRanges.some(range => product.price >= range.min && product.price <= range.max);
+      selectedPriceRanges.length === 0 || 
+      selectedPriceRanges.some(range => product.price >= range.min && product.price <= range.max);
 
-    return categoryMatch && sizeMatch && colorMatch && priceMatch;
+    return matchesSearch && categoryMatch && sizeMatch && colorMatch && priceMatch;
   });
 
   filteredProducts = [...filteredProducts].sort((a, b) => {
@@ -105,20 +121,10 @@ export default function ProductsPage() {
   if (isLoading) return <ProductsSkeleton />;
   if (error) return <div>Error: {error}</div>;
 
-  const overlayVariants = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1 },
-  };
-
+  const overlayVariants = { hidden: { opacity: 0 }, visible: { opacity: 1 } };
   const drawerVariants: Variants = {
-    hidden: {
-      y: "100%",
-      transition: { type: "tween", duration: 0.4, ease: [0.32, 0.72, 0, 1] },
-    },
-    visible: {
-      y: 0,
-      transition: { type: "spring", damping: 25, stiffness: 200, mass: 0.8 },
-    },
+    hidden: { y: "100%", transition: { type: "tween", duration: 0.4, ease: [0.32, 0.72, 0, 1] } },
+    visible: { y: 0, transition: { type: "spring", damping: 25, stiffness: 200, mass: 0.8 } },
   };
 
   return (
@@ -149,9 +155,7 @@ export default function ProductsPage() {
               key={opt}
               onClick={() => setSortOption(opt)}
               className={`px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all ${
-                sortOption === opt
-                  ? "bg-[#D4AF37] text-white shadow-lg shadow-gold/20"
-                  : "bg-white text-gray-500 hover:bg-gray-50"
+                sortOption === opt ? "bg-[#D4AF37] text-white shadow-lg shadow-gold/20" : "bg-white text-gray-500 hover:bg-gray-50"
               }`}
             >
               {opt.replace(/-/g, " ")}
@@ -162,75 +166,38 @@ export default function ProductsPage() {
 
       <div className="max-w-400 mx-auto px-4 md:px-6 flex gap-10">
         <aside className="w-72 hidden md:block sticky h-fit space-y-8">
-          <button
-            onClick={resetFilters}
-            className="w-full py-3 rounded-xl bg-[#2A1A12] text-[#D4AF37] text-sm font-bold uppercase tracking-relaxed hover:bg-black transition-colors cursor-pointer"
-          >
+          <button onClick={resetFilters} className="w-full py-3 rounded-xl bg-[#2A1A12] text-[#D4AF37] text-sm font-bold uppercase tracking-relaxed hover:bg-black transition-colors cursor-pointer">
             Reset All Filters
           </button>
 
-          <FilterSection
-            title="Categories"
-            items={categories}
-            selected={selectedCategory}
-            onToggle={(v: any) => toggleFilter(v, selectedCategory, setSelectedCategory)}
-          />
-
-          {/* <div className="space-y-4">
-            <p className="text-sm font-bold uppercase tracking-widest text-[#2A1A12]">Price Range</p>
-            {priceOptions.map((p) => (
-              <button
-                key={p.label}
-                onClick={() => setPriceRange({ min: p.min, max: p.max })}
-                className={`w-full text-left px-4 py-3 rounded-xl border text-sm transition-all ${
-                  priceRange.min === p.min && priceRange.max === p.max
-                    ? "border-[#D4AF37] bg-[#FDFBF0] text-[#7B2D0A] font-bold"
-                    : "border-gray-100 bg-white hover:border-gray-300"
-                }`}
-              >
-                {p.label}
-              </button>
-            ))}
-          </div> */}
+          <FilterSection title="Categories" items={categories} selected={selectedCategory} onToggle={(v: any) => toggleFilter(v, selectedCategory, setSelectedCategory)} />
 
           <div className="space-y-4">
-  <p className="text-sm font-bold uppercase tracking-widest text-[#2A1A12]">Price Range</p>
-  {priceOptions.map((p) => {
-    const isSelected = selectedPriceRanges.some((range) => range.label === p.label);
-    return (
-      <button
-        key={p.label}
-        onClick={() => togglePriceFilter(p)}
-        className={`w-full text-left px-4 py-3 rounded-xl border text-sm transition-all flex justify-between items-center ${
-          isSelected
-            ? "border-[#D4AF37] bg-[#FDFBF0] text-[#7B2D0A] font-bold"
-            : "border-gray-100 bg-white hover:border-gray-300"
-        }`}
-      >
-        {p.label}
-        {isSelected && <Check size={14} className="text-[#D4AF37]" />}
-      </button>
-    );
-  })}
-</div>
+            <p className="text-sm font-bold uppercase tracking-widest text-[#2A1A12]">Price Range</p>
+            {priceOptions.map((p) => {
+              const isSelected = selectedPriceRanges.some((range) => range.label === p.label);
+              return (
+                <button
+                  key={p.label}
+                  onClick={() => togglePriceFilter(p)}
+                  className={`w-full text-left px-4 py-3 rounded-xl border text-sm transition-all flex justify-between items-center ${
+                    isSelected ? "border-[#D4AF37] bg-[#FDFBF0] text-[#7B2D0A] font-bold" : "border-gray-100 bg-white hover:border-gray-300"
+                  }`}
+                >
+                  {p.label}
+                  {isSelected && <Check size={14} className="text-[#D4AF37]" />}
+                </button>
+              );
+            })}
+          </div>
 
-          <FilterSection
-            title="Available Sizes"
-            items={sizes}
-            selected={selectedSize}
-            onToggle={(v: any) => toggleFilter(v, selectedSize, setSelectedSize)}
-          />
+          <FilterSection title="Available Sizes" items={sizes} selected={selectedSize} onToggle={(v: any) => toggleFilter(v, selectedSize, setSelectedSize)} />
 
           <div className="space-y-4">
             <p className="text-sm font-bold uppercase tracking-widest text-[#2A1A12]">Color Palette</p>
             <div className="flex flex-wrap gap-3">
               {colors.map((color) => (
-                <ColorCircle
-                  key={color}
-                  color={color}
-                  isSelected={selectedColor.includes(color)}
-                  onClick={() => toggleFilter(color, selectedColor, setSelectedColor)}
-                />
+                <ColorCircle key={color} color={color} isSelected={selectedColor.includes(color)} onClick={() => toggleFilter(color, selectedColor, setSelectedColor)} />
               ))}
             </div>
           </div>
@@ -238,11 +205,7 @@ export default function ProductsPage() {
 
         <section className="flex-1">
           {filteredProducts.length === 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex flex-col items-center justify-center py-20 px-6 text-center bg-white rounded-3xl border border-dashed border-gray-200"
-            >
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col items-center justify-center py-20 px-6 text-center bg-white rounded-3xl border border-dashed border-gray-200">
               <div className="w-20 h-20 bg-[#FAF9F6] rounded-full flex items-center justify-center mb-6">
                 <Filter size={32} className="text-[#D4AF37] opacity-50" />
               </div>
@@ -256,14 +219,7 @@ export default function ProductsPage() {
           <motion.div layout className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 md:gap-4">
             <AnimatePresence mode="popLayout">
               {filteredProducts.map((product) => (
-                <motion.div
-                  key={product.id || product._id}
-                  layout
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
-                >
+                <motion.div key={product.id || product._id} layout initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}>
                   <ProductCard product={product} />
                 </motion.div>
               ))}
@@ -272,7 +228,7 @@ export default function ProductsPage() {
         </section>
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 z-40 w-full md:hidden flex bg-[#2A1A12]  overflow-hidden">
+      <div className="fixed bottom-0 left-0 right-0 z-40 w-full md:hidden flex bg-[#2A1A12] overflow-hidden">
         <button onClick={() => setIsFilterOpen(true)} className="flex-1 flex items-center justify-center gap-2 py-4 text-white font-bold text-xs uppercase tracking-widest border-r border-white/5 relative active:bg-white/10 transition">
           <div className="relative">
             <Filter size={16} className="text-[#D4AF37]" />
@@ -308,35 +264,19 @@ export default function ProductsPage() {
                     ))}
                   </div>
                 </MobileFilterGroup>
-                {/* <MobileFilterGroup title="Price Range">
-                  <div className="grid grid-cols-1 gap-2">
-                    {priceOptions.map((p) => (
-                      <button key={p.label} onClick={() => setPriceRange({ min: p.min, max: p.max })} className={`w-full py-4 px-6 rounded-2xl border text-left flex justify-between items-center ${priceRange.min === p.min && priceRange.max === p.max ? "bg-white border-[#D4AF37] ring-1 ring-[#D4AF37]" : "bg-white border-gray-100"}`}>
-                        <span className={priceRange.min === p.min && priceRange.max === p.max ? "font-bold text-[#7B2D0A]" : ""}>{p.label}</span>
-                        {priceRange.min === p.min && priceRange.max === p.max && <Check size={18} className="text-[#D4AF37]" />}
-                      </button>
-                    ))}
-                  </div>
-                </MobileFilterGroup> */}
                 <MobileFilterGroup title="Price Range">
-  <div className="grid grid-cols-1 gap-2">
-    {priceOptions.map((p) => {
-      const isSelected = selectedPriceRanges.some((range) => range.label === p.label);
-      return (
-        <button 
-          key={p.label} 
-          onClick={() => togglePriceFilter(p)} 
-          className={`w-full py-4 px-6 rounded-2xl border text-left flex justify-between items-center ${
-            isSelected ? "bg-white border-[#D4AF37] ring-1 ring-[#D4AF37]" : "bg-white border-gray-100"
-          }`}
-        >
-          <span className={isSelected ? "font-bold text-[#7B2D0A]" : ""}>{p.label}</span>
-          {isSelected && <Check size={18} className="text-[#D4AF37]" />}
-        </button>
-      );
-    })}
-  </div>
-</MobileFilterGroup>
+                  <div className="grid grid-cols-1 gap-2">
+                    {priceOptions.map((p) => {
+                      const isSelected = selectedPriceRanges.some((range) => range.label === p.label);
+                      return (
+                        <button key={p.label} onClick={() => togglePriceFilter(p)} className={`w-full py-4 px-6 rounded-2xl border text-left flex justify-between items-center ${isSelected ? "bg-white border-[#D4AF37] ring-1 ring-[#D4AF37]" : "bg-white border-gray-100"}`}>
+                          <span className={isSelected ? "font-bold text-[#7B2D0A]" : ""}>{p.label}</span>
+                          {isSelected && <Check size={18} className="text-[#D4AF37]" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </MobileFilterGroup>
                 <MobileFilterGroup title="Colors">
                   <div className="flex flex-wrap gap-4">
                     {colors.map((color) => (
@@ -384,6 +324,14 @@ export default function ProductsPage() {
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+export default function ProductsPage() {
+  return (
+    <Suspense fallback={<ProductsSkeleton />}>
+      <ProductsList />
+    </Suspense>
   );
 }
 
