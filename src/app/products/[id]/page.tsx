@@ -17,6 +17,8 @@ import {
   Check,
   AlertCircle,
   Settings2,
+  Ruler,
+  X,
 } from "lucide-react";
 import Image from "next/image";
 import ProductCard from "@/components/ProductCard";
@@ -51,6 +53,7 @@ export default function ProductDetails() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState("Added to Bag");
   const [mounted, setMounted] = useState(false);
+  const [showSizeChart, setShowSizeChart] = useState(false);
 
   const allSizes = ["S", "M", "L", "XL", "XXL"];
 
@@ -63,7 +66,6 @@ export default function ProductDetails() {
   }, []);
 
   const product = useMemo(() => {
-    // return allProducts.find((p) => (p.id || p._id) === id);
     return allProducts.find((p: any) => p.slug === id);
   }, [id, allProducts]);
 
@@ -73,7 +75,6 @@ export default function ProductDetails() {
       .filter(
         (p) =>
           p.category === product.category &&
-          // (p.id || p._id) !== (product.id || product._id),
           p.slug !== product.slug,
       )
       .slice(0, 5);
@@ -113,7 +114,6 @@ export default function ProductDetails() {
     );
   }
 
-  // Yahan ID handling fix ki gayi hai
   const productId = (product.id || product._id || product.slug) as string;
   const isOutOfStock = !product.inStock || product.quantity === 0;
   
@@ -124,7 +124,6 @@ export default function ProductDetails() {
   const isAlreadyInCart = !!cartItem;
   const sizeInCart = cartItem?.size || "";
   
-  // TypeScript Error Fixed: Force cast to string
   const active = isLoggedIn && isInWishlist(productId);
 
   const images =
@@ -284,12 +283,69 @@ export default function ProductDetails() {
                 </span>
               </section>
 
+              <section className="border-t border-stone-100 pt-8 mt-4">
+                <div className="space-y-8">
+                  <div>
+                    <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-900 mb-4">
+                      Product Description
+                    </h3>
+                    <p className="text-sm text-stone-500 leading-relaxed font-light">
+                      {product.description}
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-y-6 gap-x-4 border-t border-stone-50 pt-8">
+                    {product.fabric && (
+                      <div className="space-y-1">
+                        <p className="text-[9px] font-black uppercase tracking-widest text-stone-400">Fabric</p>
+                        <p className="text-xs font-bold text-stone-800">{product.fabric}</p>
+                      </div>
+                    )}
+                    
+                    {product.work && (
+                      <div className="space-y-1">
+                        <p className="text-[9px] font-black uppercase tracking-widest text-stone-400">Style</p>
+                        <p className="text-xs font-bold text-stone-800">{product.work}</p>
+                      </div>
+                    )}
+
+                    {product.occasion && (
+                      <div className="space-y-1">
+                        <p className="text-[9px] font-black uppercase tracking-widest text-stone-400">Best For</p>
+                        <p className="text-xs font-bold text-stone-800">{product.occasion}</p>
+                      </div>
+                    )}
+
+                    {product.color && (
+                      <div className="space-y-1">
+                        <p className="text-[9px] font-black uppercase tracking-widest text-stone-400">Color Palette</p>
+                        <div className="flex items-center gap-2">
+                          <div 
+                            className="w-3 h-3 rounded-full border border-stone-200" 
+                            style={{ backgroundColor: product.colorCode || product.color }}
+                          />
+                          <p className="text-xs font-bold text-stone-800 capitalize">{product.color}</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </section>
+
               <section
                 className={isOutOfStock ? "opacity-50 pointer-events-none" : ""}
               >
-                <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 block mb-4">
-                  {isAlreadyInCart ? "Selected Size" : "Select Fit"}
-                </span>
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                    {isAlreadyInCart ? "Selected Size" : "Select Fit"}
+                  </span>
+                  <button 
+                    onClick={() => setShowSizeChart(true)}
+                    className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest text-[#7B2D0A] hover:text-black cursor-pointer"
+                  >
+                    <Ruler size={12} /> Size Chart
+                  </button>
+                </div>
                 <div className="flex gap-3 flex-wrap">
                   {allSizes.map((size) => {
                     const isAvailable = product.sizes?.includes(size);
@@ -299,7 +355,7 @@ export default function ProductDetails() {
                         key={size}
                         disabled={!isAvailable || isOutOfStock}
                         onClick={() => setSelectedSize(size)}
-                        className={`relative min-w-[56px] h-14 flex items-center justify-center text-sm font-bold transition-all border-2 rounded-xl ${!isAvailable ? "opacity-20 cursor-not-allowed border-gray-100" : ""} ${isInBag ? "bg-[#7B2D0A] border-[#7B2D0A] text-black cursor-not-allowed" : ""} ${!isInBag && selectedSize === size ? "bg-black border-black text-white" : "border-gray-100 text-gray-400 bg-gray-50/50"}`}
+                        className={`relative min-w-[56px] h-14 flex items-center justify-center text-sm font-bold transition-all border-2 rounded-xl ${!isAvailable ? "opacity-20 cursor-not-allowed border-gray-100" : ""} ${isInBag ? "bg-[#7B2D0A] border-[#7B2D0A] text-white cursor-not-allowed" : ""} ${!isInBag && selectedSize === size ? "bg-black border-black text-white" : "border-gray-100 text-gray-400 bg-gray-50/50"}`}
                       >
                         {isInBag && (
                           <Check
@@ -318,7 +374,7 @@ export default function ProductDetails() {
                 <button
                   onClick={handleAddToCart}
                   disabled={isOutOfStock}
-                  className={`w-full py-5 font-bold uppercase tracking-[0.2em] text-xs flex items-center justify-center gap-3 transition-all ${isOutOfStock ? "bg-gray-100 text-gray-400" : isAlreadyInCart ? "bg-black text-white hover:bg-[#7B2D0A]" : "bg-[#7B2D0A] text-[#F3E1B6] hover:bg-black"}`}
+                  className={`w-full py-5 font-bold uppercase tracking-[0.2em] text-xs flex items-center justify-center gap-3 transition-all ${isOutOfStock ? "bg-gray-100 text-gray-400" : isAlreadyInCart ? "bg-black text-white hover:bg-[#7B2D0A]" : "bg-[#7B2D0A] text-[#F3E1B6] hover:bg-black cursor-pointer"}`}
                 >
                   {isOutOfStock ? (
                     <>
@@ -336,7 +392,7 @@ export default function ProductDetails() {
                 </button>
                 <button
                   onClick={handleWishlistToggle}
-                  className={`w-full border py-5 font-bold uppercase tracking-[0.2em] text-xs flex items-center justify-center gap-3 transition-all ${active ? "bg-red-50 border-red-200 text-red-500" : "border-[#7B2D0A] text-[#7B2D0A]"}`}
+                  className={`w-full border py-5 font-bold uppercase tracking-[0.2em] text-xs flex items-center justify-center gap-3 transition-all ${active ? "bg-red-50 border-red-200 text-red-500" : "border-[#7B2D0A] text-[#7B2D0A] cursor-pointer"}`}
                 >
                   <Heart size={18} fill={active ? "currentColor" : "none"} />{" "}
                   {active ? "In Wishlist" : "Wishlist"}
@@ -405,6 +461,75 @@ export default function ProductDetails() {
           </button>
         </div>
       </div>
+
+      <AnimatePresence>
+        {showSizeChart && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8">
+            <motion.div 
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }} 
+              exit={{ opacity: 0 }}
+              onClick={() => setShowSizeChart(false)}
+              className="absolute inset-0 bg-stone-900/40 backdrop-blur-md"
+            />
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              className="relative bg-white w-full max-w-xl rounded-[2rem] overflow-hidden shadow-2xl"
+            >
+              <div className="p-8 border-b border-stone-100 flex justify-between items-center bg-stone-50/50">
+                <div>
+                  <h3 className="font-serif text-2xl text-stone-800 italic">Size Guide</h3>
+                  <p className="text-[10px] uppercase tracking-widest text-stone-400 mt-1">Measurements in Inches</p>
+                </div>
+                <button 
+                  onClick={() => setShowSizeChart(false)} 
+                  className="w-10 h-10 rounded-full bg-white border border-stone-100 flex items-center justify-center text-stone-400 hover:text-black transition-all shadow-sm"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+              <div className="p-8">
+                <div className="overflow-hidden border border-stone-100 rounded-2xl">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="bg-stone-50 text-[10px] font-black uppercase tracking-widest text-stone-500 border-b border-stone-100">
+                        <th className="px-6 py-4">Size</th>
+                        <th className="px-6 py-4">Chest</th>
+                        <th className="px-6 py-4">Waist</th>
+                        <th className="px-6 py-4">Length</th>
+                      </tr>
+                    </thead>
+                    <tbody className="text-xs font-bold text-stone-600">
+                      {[
+                        { s: "S", c: "36", w: "32", l: "44" },
+                        { s: "M", c: "38", w: "34", l: "44" },
+                        { s: "L", c: "40", w: "36", l: "45" },
+                        { s: "XL", c: "42", w: "38", l: "45" },
+                        { s: "XXL", c: "44", w: "40", l: "46" },
+                      ].map((row, i) => (
+                        <tr key={i} className="border-b border-stone-50 last:border-none hover:bg-stone-50/30 transition-colors">
+                          <td className="px-6 py-4 text-stone-900">{row.s}</td>
+                          <td className="px-6 py-4">{row.c}"</td>
+                          <td className="px-6 py-4">{row.w}"</td>
+                          <td className="px-6 py-4">{row.l}"</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {/* <div className="mt-6 p-4 bg-[#FAF9F6] rounded-xl flex gap-3 items-start">
+                  <AlertCircle size={14} className="text-[#B8945A] shrink-0 mt-0.5" />
+                  <p className="text-[10px] leading-relaxed text-stone-500 italic">
+                    Note: These are garment measurements. We recommend choosing a size that is 2 inches larger than your body measurements for the perfect fit.
+                  </p>
+                </div> */}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {mounted &&
         createPortal(
