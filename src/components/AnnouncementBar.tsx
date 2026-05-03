@@ -2,16 +2,52 @@
 
 import { motion } from "framer-motion";
 import { Sparkles, Truck, Star } from "lucide-react";
+import { useState, useEffect } from "react";
 
-const announcements = [
-  { text: "FREE SHIPPING ON ALL ORDERS ABOVE ₹4999", icon: <Truck size={14} /> },
-  { text: "FLAT 10% OFF ON YOUR FIRST PURCHASE | USE CODE: BANNIRA10", icon: <Star size={14} /> },
-  { text: "NEW FESTIVE KURTI COLLECTION IS NOW LIVE", icon: <Sparkles size={14} /> },
-  { text: "CASH ON DELIVERY AVAILABLE PAN INDIA", icon: <Truck size={14} /> },
-];
+export default function AnnouncementBar() {
+  const [announcements, setAnnouncements] = useState<string[]>([]);
+  const [mounted, setMounted] = useState(false);
 
-const AnnouncementBar = () => {
-  const scrollingContent = [...announcements, ...announcements];
+  useEffect(() => {
+    setMounted(true);
+    const fetchStripText = async () => {
+      try {
+        const res = await fetch('/api/admin/settings');
+        const result = await res.json();
+        if (result.success && result.data?.topStripText?.length > 0) {
+          setAnnouncements(result.data.topStripText);
+        } else {
+          // Fallback texts
+          setAnnouncements([
+            "FREE SHIPPING ON ALL ORDERS ABOVE ₹4999",
+            "FLAT 10% OFF ON YOUR FIRST PURCHASE | USE CODE: BANNIRA10",
+            "NEW FESTIVE KURTI COLLECTION IS NOW LIVE",
+            "CASH ON DELIVERY AVAILABLE PAN INDIA"
+          ]);
+        }
+      } catch (error) {
+        console.error("Error loading top strip settings", error);
+      }
+    };
+
+    fetchStripText();
+  }, []);
+
+  if (!mounted || announcements.length === 0) {
+    return null;
+  }
+
+  const items = announcements.map((text, index) => {
+    let icon = <Sparkles size={14} className="text-[#D4AF37]" />;
+    if (text.includes("SHIPPING")) {
+      icon = <Truck size={14} className="text-[#D4AF37]" />;
+    } else if (text.includes("DISCOUNT") || text.includes("OFF") || text.includes("CODE")) {
+      icon = <Star size={14} className="text-[#D4AF37]" />;
+    }
+    return { text, icon };
+  });
+
+  const scrollingContent = [...items, ...items];
 
   return (
     <div className="fixed top-0 left-0 w-full z-[100] bg-[#7B2D0A] overflow-hidden border-b border-white/5 h-10 flex items-center">
@@ -40,6 +76,4 @@ const AnnouncementBar = () => {
       </motion.div>
     </div>
   );
-};
-
-export default AnnouncementBar;
+}

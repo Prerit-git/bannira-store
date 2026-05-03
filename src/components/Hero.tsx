@@ -5,6 +5,7 @@ import { Autoplay, Navigation, Pagination } from "swiper/modules";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 // @ts-ignore
 import "swiper/css";
 // @ts-ignore
@@ -13,7 +14,7 @@ import "swiper/css/navigation";
 import "swiper/css/pagination";
 
 type Slide = {
-  image?: string;
+  imageUrl?: string;
   desktopImage?: string;
   mobileImage?: string;
   subtitle?: string;
@@ -26,46 +27,79 @@ type Slide = {
   link: string;
 };
 
-const slides: Slide[] = [
-  {
-    desktopImage: "/assets/hero-slide-3.jpg",
-    mobileImage: "/assets/hero-slide-3.jpg",
-    subtitle: "New Arrivals",
-    title: "Designer Kurtis",
-    description: "Mirror work & embroidered kurti sets with palazzos — effortless fusion dressing for every occasion.",
-    discount: "STARTING ₹1,499",
-    cta: "Shop Now",
-    overlay: true,
-    link: "/products",
-  },
-  {
-    desktopImage: "/assets/hero-slide-1.webp",
-    mobileImage: "https://www.biba.in/dw/image/v2/BKQK_PRD/on/demandware.static/-/Library-Sites-BibaSharedLibrary/en_IN/dw79d1f9b7/A-A-SS26/SS26-Edit-M.jpg",
-    overlay: false,
-    link: "/products",
-  },
-  {
-    desktopImage: "/assets/hero-slide-2.jpg",
-    mobileImage: "/assets/hero-slide-2.jpg",
-    subtitle: "Flowing Elegance",
-    title: "Maxi Dresses",
-    description: "Vibrant Bandhani and paisley prints on flowing silhouettes — where Rajasthani heritage meets modern grace.",
-    discount: "UP TO 35% OFF",
-    cta: "Explore Maxis",
-    overlay: true,
-    link: "/products",
-  },
-  {
-    desktopImage: "https://www.biba.in/dw/image/v2/BKQK_PRD/on/demandware.static/-/Library-Sites-BibaSharedLibrary/en_IN/dwded9a678/A-A-SS26/SS'26-Banner-3.jpg",
-    mobileImage: "https://www.biba.in/dw/image/v2/BKQK_PRD/on/demandware.static/-/Library-Sites-BibaSharedLibrary/en_IN/dw6e1be403/A-A-SS26/SS'26-Banner-3-M.jpg",
-    showContent: false,
-    overlay: false,
-    link: "/products",
-  },
-];
-
-const HeroSection = () => {
+export default function HeroSection() {
   const router = useRouter();
+  const [slides, setSlides] = useState<Slide[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchBanners = async () => {
+      try {
+        const res = await fetch("/api/admin/settings");
+        const result = await res.json();
+        
+        if (result.success && result.data?.heroBanners?.length > 0) {
+          const mappedSlides: Slide[] = result.data.heroBanners.map((b: any) => ({
+            desktopImage: b.imageUrl,
+            mobileImage: b.mobileImageUrl || b.imageUrl, 
+            subtitle: b.subtitle || "",
+            title: b.title || "",
+            description: b.subtitle || "",
+            cta: "Shop Now",
+            link: b.ctaLink || "/products",
+            showContent: true,
+            overlay: true,
+          }));
+          setSlides(mappedSlides);
+        } else {
+          // Fallback static data
+          setSlides([
+            {
+              desktopImage: "/assets/hero-slide-3.jpg",
+              mobileImage: "/assets/hero-slide-3.jpg",
+              subtitle: "New Arrivals",
+              title: "Designer Kurtis",
+              description: "Mirror work & embroidered kurti sets with palazzos — effortless fusion dressing for every occasion.",
+              discount: "STARTING ₹1,499",
+              cta: "Shop Now",
+              overlay: true,
+              link: "/products",
+            },
+            {
+              desktopImage: "/assets/hero-slide-1.webp",
+              mobileImage: "https://www.biba.in/dw/image/v2/BKQK_PRD/on/demandware.static/-/Library-Sites-BibaSharedLibrary/en_IN/dw79d1f9b7/A-A-SS26/SS26-Edit-M.jpg",
+              cta: "Shop Now",
+              overlay: false,
+              link: "/products",
+            },
+          ]);
+        }
+      } catch (err) {
+        console.error("Failed to load hero banner data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBanners();
+  }, []);
+
+  if (loading) {
+    return (
+      <section className="relative h-screen w-full bg-[#1A1A18] flex flex-col items-center justify-center">
+        <div className="relative flex items-center justify-center h-24 w-24">
+          <div className="absolute animate-spin rounded-full h-20 w-20 border-t-2 border-b-2 border-[#D4AF37]"></div>
+          <div className="absolute rounded-full h-12 w-12 bg-[#2A1A12] opacity-60"></div>
+          <span className="absolute text-[8px] font-bold tracking-[0.2em] text-[#F3E1B6] uppercase">
+            Bannira
+          </span>
+        </div>
+        <p className="mt-4 text-[8px] text-[#8C7A6B] tracking-[0.3em] uppercase">
+          Preparing your style...
+        </p>
+      </section>
+    );
+  }
 
   return (
     <section className="relative h-screen w-full overflow-hidden bg-black hero-swiper-wrapper">
@@ -97,20 +131,20 @@ const HeroSection = () => {
                 {slide.mobileImage && <source media="(max-width: 768px)" srcSet={slide.mobileImage} />}
                 {slide.desktopImage && <source media="(min-width: 769px)" srcSet={slide.desktopImage} />}
                 <img
-                  src={slide.desktopImage || slide.mobileImage}
+                  src={slide.desktopImage || slide.mobileImage || ""}
                   className="h-full w-full object-cover"
                   alt={slide.title || "Banner"}
                 />
               </picture>
 
-              {slide.overlay !== false && (
+              {/* {slide.overlay !== false && (
                 <div
                   className="absolute inset-0"
                   style={{
                     background: "linear-gradient(to right, hsla(20,38%,12%,0.8), hsla(20,38%,12%,0.2))",
                   }}
                 />
-              )}
+              )} */}
 
               {slide.showContent !== false && (
                 <div className="absolute inset-0 flex items-center justify-center text-center px-6 pointer-events-none">
@@ -161,7 +195,8 @@ const HeroSection = () => {
                       </motion.p>
                     )}
 
-                    {slide.cta && (
+                    {/* Button tabhi render hoga jab title / desc kuch exist karta ho */}
+                    {slide.title && slide.cta && (
                       <motion.button
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
@@ -212,6 +247,4 @@ const HeroSection = () => {
       `}</style>
     </section>
   );
-};
-
-export default HeroSection;
+}

@@ -14,6 +14,13 @@ interface CartItem {
   quantity: number;
 }
 
+interface Coupon {
+  code: string;
+  discountType: "percentage" | "fixed";
+  discountValue: number;
+  minOrderValue?: number;
+}
+
 interface CartContextType {
   cart: CartItem[];
   addToCart: (product: any, size: string) => void;
@@ -35,15 +42,19 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   const [discount, setDiscount] = useState(0);
   const [isInitialLoaded, setIsInitialLoaded] = useState(false);
   const { isLoggedIn } = useAuth();
-  const [notification, setNotification] = useState<{message: string, visible: boolean}>({
-  message: "",
-  visible: false
-});
+  
+  // Store fetched database coupons
+  const [dbCoupons, setDbCoupons] = useState<Coupon[]>([]);
 
-const showToast = (msg: string) => {
-  setNotification({ message: msg, visible: true });
-  setTimeout(() => setNotification({ message: "", visible: false }), 3000);
-};
+  const [notification, setNotification] = useState<{message: string, visible: boolean}>({
+    message: "",
+    visible: false
+  });
+
+  const showToast = (msg: string) => {
+    setNotification({ message: msg, visible: true });
+    setTimeout(() => setNotification({ message: "", visible: false }), 3000);
+  };
 
   useEffect(() => {
     const loadCart = async () => {
@@ -67,8 +78,22 @@ const showToast = (msg: string) => {
       
       setIsInitialLoaded(true);
     };
+    
     loadCart();
+    fetchDbCoupons();
   }, [isLoggedIn]);
+
+  const fetchDbCoupons = async () => {
+    try {
+      const res = await fetch("/api/admin/settings");
+      const result = await res.json();
+      if (result.success && result.data && Array.isArray(result.data.coupons)) {
+        setDbCoupons(result.data.coupons);
+      }
+    } catch (e) {
+      console.error("Failed to load DB coupons", e);
+    }
+  };
 
   useEffect(() => {
     if (!isInitialLoaded) return;
@@ -92,23 +117,41 @@ const showToast = (msg: string) => {
       const handler = setTimeout(syncDB, 1000);
       return () => clearTimeout(handler);
     }
+  }, [cart, isLoggedIn, isInitialLoaded]);
 
+  useEffect(() => {
     if (appliedCoupon) {
       localStorage.setItem("bannira_coupon", appliedCoupon);
     } else {
       localStorage.removeItem("bannira_coupon");
     }
-  }, [cart, appliedCoupon, isLoggedIn, isInitialLoaded]);
+  }, [appliedCoupon]);
 
   const totalPrice = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
+  // Dynamic Calculation Logic
   useEffect(() => {
-    if (appliedCoupon === "BANNIRA10") {
+    if (!appliedCoupon) {
+      setDiscount(0);
+      return;
+    }
+
+    // Find the coupon in our fetched DB data or check for the standard BANNIRA10
+    const couponObj = dbCoupons.find(c => c.code === appliedCoupon);
+    
+    if (couponObj) {
+      if (couponObj.discountType === "fixed") {
+        setDiscount(couponObj.discountValue);
+      } else {
+        // Percentage based discount logic
+        setDiscount(Math.round(totalPrice * (couponObj.discountValue / 100)));
+      }
+    } else if (appliedCoupon === "BANNIRA10") {
       setDiscount(Math.round(totalPrice * 0.10));
     } else {
       setDiscount(0);
     }
-  }, [totalPrice, appliedCoupon]);
+  }, [totalPrice, appliedCoupon, dbCoupons]);
 
   const addToCart = (product: any, size: string) => {
     const productId = product.id || product._id;
@@ -150,15 +193,12 @@ const showToast = (msg: string) => {
 
     try {
       const res = await fetch(`/api/products/${id}`);
-
       if (!res.ok) {
-      const errorData = await res.json();
-      throw new Error(errorData.error || "Failed to fetch stock");
-    }
-      const productData = await res.json();
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Failed to fetch stock");
+      }
       
-      if (!res.ok) throw new Error("Failed to fetch stock");
-
+      const productData = await res.json();
       const availableStock = productData.quantity;
 
       if (newQuantity > availableStock) {
@@ -191,10 +231,15 @@ const showToast = (msg: string) => {
   }, []); 
 
   const applyCoupon = (code: string) => {
-    if (code.toUpperCase() === "BANNIRA10") {
-      setAppliedCoupon("BANNIRA10");
+    const upperCode = code.toUpperCase();
+    // Validate from database coupon list or standard BANNIRA10
+    const isValid = dbCoupons.some(c => c.code === upperCode) || upperCode === "BANNIRA10";
+    
+    if (isValid) {
+      setAppliedCoupon(upperCode);
       return true;
     }
+    
     return false;
   };
 
@@ -219,24 +264,24 @@ const showToast = (msg: string) => {
       {children}
 
       <AnimatePresence>
-      {notification.visible && (
-        <motion.div
-          initial={{ y: 100, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: 100, opacity: 0 }}
-          className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[999] w-[90%] md:w-auto"
-        >
-          <div className="bg-[#1C1C1C] text-[#D4AF37] px-8 py-4 rounded-2xl shadow-2xl border border-[#D4AF37]/20 flex items-center gap-4 backdrop-blur-md bg-opacity-95">
-            <div className="bg-[#D4AF37] text-black rounded-full p-1">
-              <ShieldCheck size={16} />
+        {notification.visible && (
+          <motion.div
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[999] w-[90%] md:w-auto"
+          >
+            <div className="bg-[#1C1C1C] text-[#D4AF37] px-8 py-4 rounded-2xl shadow-2xl border border-[#D4AF37]/20 flex items-center gap-4 backdrop-blur-md bg-opacity-95">
+              <div className="bg-[#D4AF37] text-black rounded-full p-1">
+                <ShieldCheck size={16} />
+              </div>
+              <p className="text-[11px] font-black uppercase tracking-[0.2em] whitespace-nowrap">
+                {notification.message}
+              </p>
             </div>
-            <p className="text-[11px] font-black uppercase tracking-[0.2em] whitespace-nowrap">
-              {notification.message}
-            </p>
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </CartContext.Provider>
   );
 };
