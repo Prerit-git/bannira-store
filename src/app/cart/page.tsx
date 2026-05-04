@@ -286,7 +286,6 @@ export default function CartPage() {
                 </span>
               </div>
 
-              {/* Available Offers Section */}
               {availableCoupons.length > 0 && (
                 <div className="mb-6">
                   <p className="text-[9px] font-black uppercase tracking-widest text-stone-400 mb-3">
@@ -320,7 +319,7 @@ export default function CartPage() {
                               {coupon.discountType === "percentage"
                                 ? "%"
                                 : "₹"}{" "}
-                              (Min. ₹{coupon.minOrderValue || 0})
+                              (Min. order: ₹{coupon.minOrderValue || 0})
                             </p>
                           </div>
                           <span
@@ -509,6 +508,118 @@ export default function CartPage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {mounted &&
+        createPortal(
+          <AnimatePresence>
+            {deleteTarget && (
+              <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onClick={() => setDeleteTarget(null)}
+                  className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                />
+                <motion.div
+                  initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                  animate={{ scale: 1, opacity: 1, y: 0 }}
+                  exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                  className="relative bg-white w-full max-w-sm rounded-[2.5rem] overflow-hidden shadow-2xl p-8 text-center"
+                >
+                  <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <AlertCircle size={32} />
+                  </div>
+                  <h3 className="text-xl font-serif text-stone-900 mb-2">
+                    Wait, are you sure?
+                  </h3>
+                  <p className="text-sm text-stone-500 mb-8 leading-relaxed">
+                    Do you really want to let go of this beautiful{" "}
+                    <span className="font-bold text-stone-800">
+                      {deleteTarget.name}
+                    </span>
+                    ? It would look amazing on you!
+                  </p>
+                  <div className="flex flex-col gap-3">
+                    <button
+                      onClick={confirmDelete}
+                      className="w-full py-4 bg-[#7B2D0A] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-red-500/20 active:scale-95 transition-all"
+                    >
+                      Yes, Remove it
+                    </button>
+                    <button
+                      onClick={() => setDeleteTarget(null)}
+                      className="w-full py-4 bg-stone-100 text-stone-600 rounded-2xl text-[10px] font-black uppercase tracking-widest active:scale-95 transition-all"
+                    >
+                      No, keep it
+                    </button>
+                  </div>
+                </motion.div>
+              </div>
+            )}
+
+            {couponStatus !== "idle" && (
+              <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onClick={() => setCouponStatus("idle")}
+                  className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                />
+                <motion.div
+                  initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                  animate={{ scale: 1, opacity: 1, y: 0 }}
+                  exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                  className="relative bg-white w-full max-w-sm rounded-[2.5rem] overflow-hidden shadow-2xl p-8 text-center"
+                >
+                  {couponStatus === "success" ? (
+                    <>
+                      <div className="w-16 h-16 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <Sparkles size={32} />
+                      </div>
+                      <h3 className="text-xl font-serif text-stone-900 mb-2">
+                        Offer Applied!
+                      </h3>
+                      <p className="text-sm text-stone-500 mb-6 leading-relaxed">
+                        Congratulations! You just saved{" "}
+                        <span className="font-bold text-stone-900">
+                          ₹{discount.toLocaleString()}
+                        </span>{" "}
+                        on your order.
+                      </p>
+                      <button
+                        onClick={() => setCouponStatus("idle")}
+                        className="w-full py-4 bg-black text-white rounded-2xl text-[10px] font-black uppercase tracking-widest active:scale-95 transition-all"
+                      >
+                        Continue
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <XCircle size={32} />
+                      </div>
+                      <h3 className="text-xl font-serif text-stone-900 mb-2">
+                        Offer Applied!
+                      </h3>
+                      <p className="text-sm text-stone-500 mb-6 leading-relaxed">
+                        Coupon applied successfully.
+                      </p>
+                      <button
+                        onClick={() => setCouponStatus("idle")}
+                        className="w-full py-4 bg-black text-white rounded-2xl text-[10px] font-black uppercase tracking-widest active:scale-95 transition-all"
+                      >
+                        Continue
+                      </button>
+                    </>
+                  )}
+                </motion.div>
+              </div>
+            )}
+          </AnimatePresence>,
+          document.body,
+        )}
     </div>
   );
 }

@@ -5,7 +5,12 @@ import { Sparkles, Truck, Star } from "lucide-react";
 import { useState, useEffect } from "react";
 
 export default function AnnouncementBar() {
-  const [announcements, setAnnouncements] = useState<string[]>([]);
+  const [announcements, setAnnouncements] = useState<string[]>([
+    "FREE SHIPPING ON ALL ORDERS ABOVE ₹2999",
+    "FLAT 10% OFF ON YOUR FIRST PURCHASE | USE CODE: BANNIRA10",
+    "NEW FESTIVE KURTI COLLECTION IS NOW LIVE",
+    "CASH ON DELIVERY AVAILABLE PAN INDIA"
+  ]);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -16,14 +21,6 @@ export default function AnnouncementBar() {
         const result = await res.json();
         if (result.success && result.data?.topStripText?.length > 0) {
           setAnnouncements(result.data.topStripText);
-        } else {
-          // Fallback texts
-          setAnnouncements([
-            "FREE SHIPPING ON ALL ORDERS ABOVE ₹4999",
-            "FLAT 10% OFF ON YOUR FIRST PURCHASE | USE CODE: BANNIRA10",
-            "NEW FESTIVE KURTI COLLECTION IS NOW LIVE",
-            "CASH ON DELIVERY AVAILABLE PAN INDIA"
-          ]);
         }
       } catch (error) {
         console.error("Error loading top strip settings", error);
@@ -33,11 +30,11 @@ export default function AnnouncementBar() {
     fetchStripText();
   }, []);
 
-  if (!mounted || announcements.length === 0) {
+  if (!mounted) {
     return null;
   }
 
-  const items = announcements.map((text, index) => {
+  const items = announcements.map((text) => {
     let icon = <Sparkles size={14} className="text-[#D4AF37]" />;
     if (text.includes("SHIPPING")) {
       icon = <Truck size={14} className="text-[#D4AF37]" />;
