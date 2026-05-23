@@ -30,20 +30,26 @@ export interface IOrder extends Document {
   totalAmount: number;
   paymentMethod: string;
   paymentStatus: "Pending" | "Paid" | "Failed";
-  orderStatus: "Processing" | "Shipped" | "Delivered" | "Cancelled";
+  orderStatus: "Pending" | "Processing" | "Shipped" | "Delivered" | "Cancelled";
   createdAt: Date;
+  razorpayOrderId?: string;
+  razorpayPaymentId?: string;
 }
 
 const OrderSchema = new Schema<IOrder>(
   {
-    user: { 
-      type: Schema.Types.ObjectId, 
-      ref: "User", 
-      required: true 
+    user: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
     items: [
       {
-        productId: { type: Schema.Types.ObjectId, ref: "Product", required: true },
+        productId: {
+          type: Schema.Types.ObjectId,
+          ref: "Product",
+          required: true,
+        },
         name: { type: String, required: true },
         image: { type: String, required: true },
         size: { type: String, required: true },
@@ -67,10 +73,10 @@ const OrderSchema = new Schema<IOrder>(
     tax: { type: Number, default: 0 },
     discount: { type: Number, default: 0 },
     totalAmount: { type: Number, required: true },
-    paymentMethod: { 
-      type: String, 
-      required: true, 
-      enum: ["upi", "card", "cod"] 
+    paymentMethod: {
+      type: String,
+      required: true,
+      enum: ["upi", "card", "cod"],
     },
     paymentStatus: {
       type: String,
@@ -80,10 +86,18 @@ const OrderSchema = new Schema<IOrder>(
     orderStatus: {
       type: String,
       default: "Processing",
-      enum: ["Processing", "Shipped", "Delivered", "Cancelled"],
+      enum: ["Pending", "Processing", "Shipped", "Delivered", "Cancelled"],
+    },
+    razorpayOrderId: {
+      type: String,
+      required: false,
+    },
+    razorpayPaymentId: {
+      type: String,
+      required: false,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 const Order = models.Order || model<IOrder>("Order", OrderSchema);

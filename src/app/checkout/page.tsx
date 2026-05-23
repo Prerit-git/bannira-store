@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { createPortal } from "react-dom";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import Script from "next/script"; // 1. External Razorpay script load karne ke liye
 import {
   ChevronLeft,
   ShieldCheck,
@@ -23,18 +23,8 @@ import {
   CheckCircle2,
 } from "lucide-react";
 
-interface Coupon {
-  code: string;
-  discountType: "percentage" | "fixed";
-  discountValue: number;
-  minOrderValue?: number;
-  startDate: any;
-  endDate?: string | null;
-  isActive: boolean;
-}
-
 export default function CheckoutPage() {
-  const { cart, totalPrice, discount } = useCart();
+  const { cart, totalPrice, discount, clearCart } = useCart();
   const { isLoggedIn, isLoading, user } = useAuth();
   const router = useRouter();
 
@@ -133,12 +123,6 @@ export default function CheckoutPage() {
   const tax = Math.round(subtotal * (gstPercentage / 100));
   const finalTotal = subtotal + shipping + tax - discount;
 
-  const amountToFree = shippingFreeLimit - subtotal;
-  const progressPercentage = Math.min(
-    (subtotal / shippingFreeLimit) * 100,
-    100,
-  );
-
   const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     if (name === "phone") {
@@ -146,64 +130,151 @@ export default function CheckoutPage() {
       setFormData((prev) => ({ ...prev, phone: val }));
       return;
     }
+    
     setFormData((prev) => ({ ...prev, [name]: value }));
+
+    // Pincode strict verification block
     if (name === "pincode" && value.length === 6) {
       setIsPincodeLoading(true);
       try {
         const res = await fetch(
-          `https://api.postalpincode.in/pincode/${value}`,
+          `https://api.postalpincode.in/pincode/${value.trim()}`
         );
+        
+        if (!res.ok) throw new Error("Network response was not ok");
+
         const data = await res.json();
-        if (data[0].Status === "Success")
+        
+        if (data && data[0] && data[0].Status === "Success" && data[0].PostOffice?.[0]) {
           setFormData((prev) => ({
             ...prev,
             state: data[0].PostOffice[0].State,
           }));
+        } else {
+          console.warn("Pincode API returned empty or unsuccessful status");
+        }
       } catch (e) {
-        console.error(e);
+        console.error("Pincode Fetch Error:", e);
+        showToast("Something went wrong. Please enter state manually.");
       } finally {
         setIsPincodeLoading(false);
       }
     }
   };
 
+  // 2. MODIFIED ORDER & PAYMENT GATEWAY FLOW
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.fullName || formData.phone.length < 10 || !formData.address) {
       showToast("Please check all required fields.");
       return;
     }
+    
     setIsPlacingOrder(true);
+
     try {
       const dbUserId = user?.id || user?._id;
+      
+      // Order payload common object
+      const orderPayload = {
+        userId: dbUserId,
+        items: cart.map((item) => ({
+          productId: item.id || (item as any).productId,
+          name: item.name,
+          image: item.image,
+          size: item.size,
+          quantity: item.quantity,
+          price: item.price,
+        })),
+        address: formData,
+        subtotal,
+        shippingCharge: shipping,
+        tax,
+        discount,
+        total: finalTotal,
+        paymentMethod,
+      };
+
+      // --- CASE A: CASH ON DELIVERY ---
+      if (paymentMethod === "cod") {
+        const res = await fetch("/api/orders", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(orderPayload),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        
+        sessionStorage.setItem("lastOrder", JSON.stringify(data.order));
+        if (clearCart) clearCart(); // Safety check
+        router.push("/order-success");
+        return;
+      }
+
+      // --- CASE B: ONLINE PAYMENT (RAZORPAY) ---
+      // Pehle backend se secure transaction id / order verify karwayein
       const res = await fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: dbUserId,
-          items: cart.map((item) => ({
-            productId: item.id || (item as any).productId,
-            name: item.name,
-            image: item.image,
-            size: item.size,
-            quantity: item.quantity,
-            price: item.price,
-          })),
-          address: formData,
-          subtotal,
-          shippingCharge: shipping,
-          tax,
-          discount,
-          total: finalTotal,
-          paymentMethod,
-        }),
+        body: JSON.stringify({ ...orderPayload, isOnlinePaymentInit: true }), // Backend ko signal de rhe hain key generation ke liye
       });
+      
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-      sessionStorage.setItem("lastOrder", JSON.stringify(data.order));
-      router.push("/order-success");
+      if (!res.ok) throw new Error(data.error || "Order generation failed");
+
+      // Razorpay implementation setup parameters
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        amount: data.razorpayOrder.amount,
+        currency: data.razorpayOrder.currency,
+        name: "BANNIRA",
+        description: "Premium Ethnic Wear Purchase",
+        image: "/bannira_web_logo2.png",
+        order_id: data.razorpayOrder.id, 
+        handler: async function (response: any) {
+  try {
+    const verifyRes = await fetch("/api/orders/verify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        orderId: data.order._id,
+        razorpay_payment_id: response.razorpay_payment_id,
+        razorpay_order_id: response.razorpay_order_id,
+        razorpay_signature: response.razorpay_signature,
+      }),
+    });
+
+    const verifyData = await verifyRes.json();
+    if (!verifyRes.ok) throw new Error(verifyData.error || "Verification failed");
+
+    sessionStorage.setItem("lastOrder", JSON.stringify(verifyData.order));
+    if (clearCart) clearCart();
+    router.push("/order-success");
+  } catch (verifyErr: any) {
+    showToast(verifyErr.message || "Payment authentication failed");
+    setIsPlacingOrder(false);
+  }
+},
+        prefill: {
+          name: formData.fullName,
+          email: formData.email,
+          contact: formData.phone,
+        },
+        theme: {
+          color: "#7B2D0A", // Custom core brand identity theme injection
+        },
+        modal: {
+          ondismiss: function () {
+            setIsPlacingOrder(false); // Modal cancel hone par loader close karein
+          },
+        },
+      };
+
+      const rzp = new (window as any).Razorpay(options);
+      rzp.open();
+
     } catch (err: any) {
-      showToast(err.message);
+      showToast(err.message || "Something went wrong.");
       setIsPlacingOrder(false);
     }
   };
@@ -217,6 +288,9 @@ export default function CheckoutPage() {
 
   return (
     <div className="min-h-screen bg-[#FAF9F6] pb-32 pt-32 md:pt-40">
+      {/* Script component explicitly fetching runtime dependencies code libraries */}
+      <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
+
       <AnimatePresence>
         {notification.visible && (
           <motion.div
@@ -318,11 +392,6 @@ export default function CheckoutPage() {
                         value={formData.phone}
                         onChange={handleInputChange}
                       />
-                      <style jsx>{`
-                        input {
-                          padding-left: 32px !important;
-                        }
-                      `}</style>
                     </div>
                     <div className="md:col-span-2">
                       <InputField
@@ -357,7 +426,7 @@ export default function CheckoutPage() {
                       label={isPincodeLoading ? "..." : "State *"}
                       name="state"
                       value={formData.state}
-                      readOnly
+                      onChange={handleInputChange}
                     />
                   </div>
                   <div className="flex gap-4">
@@ -509,7 +578,7 @@ export default function CheckoutPage() {
               <button
                 type="submit"
                 disabled={isPlacingOrder}
-                className="w-full mt-10 py-6 bg-[#D4AF37] text-black rounded-2xl font-black uppercase text-[11px] tracking-[0.3em] flex items-center justify-center gap-2 hover:bg-white transition-all shadow-xl disabled:opacity-50"
+                className="w-full mt-10 py-6 bg-[#D4AF37] text-black rounded-2xl font-black uppercase text-[11px] tracking-[0.3em] flex items-center justify-center gap-2 hover:bg-white transition-all shadow-xl disabled:opacity-50 cursor-pointer"
               >
                 {isPlacingOrder ? (
                   <Loader2 className="animate-spin" />
@@ -546,7 +615,7 @@ function InputField({ label, ...props }: any) {
         className="peer w-full bg-transparent border-b border-stone-200 py-3 outline-none focus:border-[#7B2D0A] transition-all text-sm font-medium placeholder-transparent"
         placeholder={label}
       />
-      <label className="absolute left-0 -top-4 text-[10px] font-bold uppercase tracking-widest text-stone-400 transition-all peer-placeholder-shown:text-sm peer-placeholder-shown:top-3 peer-focus:-top-4 peer-focus:text-[#7B2D0A] pointer-events-none uppercase">
+      <label className="absolute left-0 -top-4 text-[10px] font-bold uppercase tracking-widest text-stone-400 transition-all peer-placeholder-shown:text-sm peer-placeholder-shown:top-3 peer-focus:-top-4 peer-focus:text-[#7B2D0A] pointer-events-none">
         {label}
       </label>
     </div>
@@ -558,7 +627,7 @@ function PaymentOption({ id, label, icon, active, onClick }: any) {
     <button
       type="button"
       onClick={() => onClick(id)}
-      className={`w-full flex items-center justify-between p-5 rounded-3xl border-2 transition-all ${active ? "border-[#7B2D0A] bg-[#7B2D0A]/5" : "border-stone-100"}`}
+      className={`w-full flex items-center justify-between p-5 rounded-3xl border-2 transition-all cursor-pointer ${active ? "border-[#7B2D0A] bg-[#7B2D0A]/5" : "border-stone-100"}`}
     >
       <div className="flex items-center gap-4">
         <div
@@ -581,7 +650,7 @@ function TypeBadge({ active, onClick, icon, label }: any) {
     <button
       type="button"
       onClick={onClick}
-      className={`flex items-center gap-2 px-6 py-3 rounded-2xl border text-[10px] font-black uppercase tracking-widest transition-all ${active ? "bg-black text-white" : "bg-stone-50 text-stone-400"}`}
+      className={`flex items-center gap-2 px-6 py-3 rounded-2xl border text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer ${active ? "bg-black text-white" : "bg-stone-50 text-stone-400"}`}
     >
       {" "}
       {icon} {label}{" "}
