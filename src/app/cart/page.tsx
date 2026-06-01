@@ -179,84 +179,90 @@ export default function CartPage() {
         <div className="flex flex-col lg:flex-row gap-16">
           <div className="flex-1">
             <AnimatePresence mode="popLayout">
-              {cart.map((item) => (
-                <motion.div
-                  key={`${item.id}-${item.size}`}
-                  layout
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  className="flex gap-6 md:gap-8 py-5 border-b border-stone-100 group last:border-0"
-                >
-                  <Link
-                    href={`/products/${item.id}`}
-                    className="w-24 md:w-36 aspect-[3/4] bg-[#F9F9F9] shrink-0 overflow-hidden cursor-pointer rounded-sm shadow-sm"
+              {cart.map((item) => {
+                // 🔥 FIXED: Direct explicit target mapping to prevent undefined routes crashes
+                const productRoute = `/products/${item.slug}`;
+                
+                return (
+                  <motion.div
+                    key={`${item.id}-${item.size}`}
+                    layout
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    className="flex gap-6 md:gap-8 py-5 border-b border-stone-100 group last:border-0"
                   >
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                    />
-                  </Link>
+                    {/* Clickable Image Card Link Wrapper */}
+                    <Link
+                      href={productRoute}
+                      className="w-24 md:w-36 aspect-[3/4] bg-[#F9F9F9] shrink-0 overflow-hidden cursor-pointer rounded-sm shadow-sm block"
+                    >
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                      />
+                    </Link>
 
-                  <div className="flex-1 flex flex-col justify-between py-1">
-                    <div className="flex justify-between items-start">
-                      <div className="space-y-1">
-                        <Link href={`/products/${item.id}`}>
-                          <h3 className="text-md md:text-lg font-medium text-stone-900 hover:text-[#7B2D0A] transition-colors leading-tight">
-                            {item.name}
-                          </h3>
-                        </Link>
-                        <div className="flex items-center gap-4 text-[10px] font-bold text-stone-400 uppercase tracking-widest mt-2">
-                          <span>
-                            Size:{" "}
-                            <span className="text-stone-900">{item.size}</span>
-                          </span>
-                          <span className="text-stone-200">|</span>
-                          <span>Price: ₹{item.price.toLocaleString()}</span>
+                    <div className="flex-1 flex flex-col justify-between py-1">
+                      <div className="flex justify-between items-start">
+                        <div className="space-y-1 flex-1 min-w-0 pr-4">
+                          {/* Clickable Text Title Link Wrapper */}
+                          <Link href={productRoute} className="block group/title">
+                            <h3 className="text-md md:text-lg font-medium text-stone-900 group-hover/title:text-[#7B2D0A] transition-colors leading-tight truncate">
+                              {item.name}
+                            </h3>
+                          </Link>
+                          <div className="flex items-center gap-4 text-[10px] font-bold text-stone-400 uppercase tracking-widest mt-2">
+                            <span>
+                              Size:{" "}
+                              <span className="text-stone-900">{item.size}</span>
+                            </span>
+                            <span className="text-stone-200">|</span>
+                            <span>Price: ₹{item.price.toLocaleString()}</span>
+                          </div>
                         </div>
-                      </div>
-                      <button
-                        onClick={() =>
-                          setDeleteTarget({
-                            id: item.id,
-                            size: item.size,
-                            name: item.name,
-                          })
-                        }
-                        className="p-2 text-stone-300 hover:text-red-500 transition-colors cursor-pointer rounded-full hover:bg-red-50"
-                      >
-                        <Trash2 size={18} strokeWidth={1.5} />
-                      </button>
-                    </div>
-
-                    <div className="flex justify-between items-end mt-6">
-                      <div className="flex items-center border border-stone-200 rounded-full p-1 bg-white shadow-sm">
                         <button
                           onClick={() =>
-                            updateQuantity(
-                              item.id,
-                              item.size,
-                              item.quantity - 1,
-                            )
+                            setDeleteTarget({
+                              id: item.id,
+                              size: item.size,
+                              name: item.name,
+                            })
                           }
-                          disabled={item.quantity <= 1}
-                          className="w-8 h-8 flex items-center justify-center text-stone-400 hover:text-black disabled:opacity-20 transition-colors cursor-pointer"
+                          className="p-2 text-stone-300 hover:text-red-500 transition-colors cursor-pointer rounded-full hover:bg-red-50 shrink-0"
                         >
-                          <Minus size={14} />
+                          <Trash2 size={18} strokeWidth={1.5} />
                         </button>
-                        <span className="px-4 text-sm font-bold font-poppins min-w-[32px] text-center">
-                          {item.quantity}
-                        </span>
-                        <button
-                          onClick={() =>
-                            updateQuantity(
-                              item.id,
-                              item.size,
-                              item.quantity + 1,
-                            )
-                          }
-                          className="w-8 h-8 flex items-center justify-center text-stone-400 hover:text-black transition-colors cursor-pointer"
+                      </div>
+
+                      <div className="flex justify-between items-end mt-6">
+                        <div className="flex items-center border border-stone-200 rounded-full p-1 bg-white shadow-sm z-10">
+                          <button
+                            onClick={() =>
+                              updateQuantity(
+                                item.id,
+                                item.size,
+                                item.quantity - 1,
+                              )
+                            }
+                            disabled={item.quantity <= 1}
+                            className="w-8 h-8 flex items-center justify-center text-stone-400 hover:text-black disabled:opacity-20 transition-colors cursor-pointer"
+                          >
+                            <Minus size={14} />
+                          </button>
+                          <span className="px-4 text-sm font-bold font-poppins min-w-[32px] text-center">
+                            {item.quantity}
+                          </span>
+                          <button
+                            onClick={() =>
+                              updateQuantity(
+                                item.id,
+                                item.size,
+                                item.quantity + 1,
+                              )
+                            }
+                            className="w-8 h-8 flex items-center justify-center text-stone-400 hover:text-black transition-colors cursor-pointer"
                         >
                           <Plus size={14} />
                         </button>
@@ -273,7 +279,8 @@ export default function CartPage() {
                     </div>
                   </div>
                 </motion.div>
-              ))}
+                );
+              })}
             </AnimatePresence>
           </div>
 

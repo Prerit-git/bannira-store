@@ -12,6 +12,7 @@ interface CartItem {
   image: string;
   size: string;
   quantity: number;
+  slug: string; // 🔥 Added slug to the CartItem type definition
 }
 
 interface Coupon {
@@ -36,6 +37,16 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
+// Helper function synced with ProductContext to ensure slug integrity
+const generateSlug = (name: string) => {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/[\s_-]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+};
+
 export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
@@ -43,7 +54,6 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   const [isInitialLoaded, setIsInitialLoaded] = useState(false);
   const { isLoggedIn } = useAuth();
   
-  // Store fetched database coupons
   const [dbCoupons, setDbCoupons] = useState<Coupon[]>([]);
 
   const [notification, setNotification] = useState<{message: string, visible: boolean}>({
@@ -129,21 +139,18 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
 
   const totalPrice = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
-  // Dynamic Calculation Logic
   useEffect(() => {
     if (!appliedCoupon) {
       setDiscount(0);
       return;
     }
 
-    // Find the coupon in our fetched DB data or check for the standard BANNIRA10
     const couponObj = dbCoupons.find(c => c.code === appliedCoupon);
     
     if (couponObj) {
       if (couponObj.discountType === "fixed") {
         setDiscount(couponObj.discountValue);
       } else {
-        // Percentage based discount logic
         setDiscount(Math.round(totalPrice * (couponObj.discountValue / 100)));
       }
     } else if (appliedCoupon === "BANNIRA10") {
@@ -153,9 +160,13 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [totalPrice, appliedCoupon, dbCoupons]);
 
+  // 🔥 FIXED: Captures or generates the proper product slug during instantiation
   const addToCart = (product: any, size: string) => {
     const productId = product.id || product._id;
     const availableStock = product.quantity;
+
+    // Direct extraction or runtime fallback generation matching ProductProvider structure
+    const productSlug = product.slug || `${generateSlug(product.name)}-${productId.toString().slice(-4)}`;
 
     setCart((prev) => {
       const existingItem = prev.find((item) => item.id === productId && item.size === size);
@@ -183,7 +194,8 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
         price: product.price, 
         image: product.image || (product.images && product.images[0]), 
         size, 
-        quantity: 1 
+        quantity: 1,
+        slug: productSlug // 🔥 Storing the safe slug here
       }];
     });
   };
@@ -232,7 +244,6 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
 
   const applyCoupon = (code: string) => {
     const upperCode = code.toUpperCase();
-    // Validate from database coupon list or standard BANNIRA10
     const isValid = dbCoupons.some(c => c.code === upperCode) || upperCode === "BANNIRA10";
     
     if (isValid) {
