@@ -13,9 +13,14 @@ export async function POST(req: Request) {
 
     for (const item of items) {
       const idToSearch = item.id || item.productId;
+      const selectedSize = item.size;
       
       if (!idToSearch) {
         return NextResponse.json({ error: "Product ID missing for " + item.name }, { status: 400 });
+      }
+
+      if (!selectedSize) {
+        return NextResponse.json({ error: `Size parameter missing for product "${item.name}".` }, { status: 400 });
       }
 
       const product = await Product.findById(idToSearch);
@@ -27,10 +32,24 @@ export async function POST(req: Request) {
         );
       }
 
-      if (product.quantity < item.quantity) {
+      const sizeStockAvailable = product.sizeVariants 
+        ? (product.sizeVariants instanceof Map ? product.sizeVariants.get(selectedSize) : product.sizeVariants[selectedSize]) || 0
+        : 0;
+
+      // 🔥 FIXED: Check against specific variant stock instead of global root quantity
+      if (sizeStockAvailable < item.quantity) {
+        if (sizeStockAvailable === 0) {
+          return NextResponse.json(
+            { 
+              error: `Sorry, Size ${selectedSize} for "${item.name}" is completely Sold Out.` 
+            },
+            { status: 400 }
+          );
+        }
+        
         return NextResponse.json(
           { 
-            error: `Only ${product.quantity} units of "${item.name}" available.` 
+            error: `Only ${sizeStockAvailable} units of "${item.name}" (Size ${selectedSize}) are available in stock.` 
           },
           { status: 400 }
         );

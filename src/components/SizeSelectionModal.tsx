@@ -21,7 +21,7 @@ export default function SizeSelectionModal({
   availableSizes,
   initialSize 
 }: SizeModalProps) {
-  const allSizes = ["S", "M", "L", "XL", "XXL"];
+  // const allSizes = ["XS", "S", "M", "L", "XL", "XXL", "3XL"];
   const [tempSize, setTempSize] = useState("");
   const [mounted, setMounted] = useState(false);
 
@@ -85,7 +85,7 @@ export default function SizeSelectionModal({
           </header>
 
           <div className="grid grid-cols-3 gap-4 mb-10">
-            {allSizes.map((size, index) => {
+            {availableSizes.map((size, index) => {
               const isAvailable = availableSizes.includes(size);
               const isCurrent = size === initialSize;
               return (

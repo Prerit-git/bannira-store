@@ -20,7 +20,8 @@ export async function POST(req: Request) {
       tax, discount, total, paymentMethod, isOnlinePaymentInit 
     } = body;
 
-    // --- 1. COMMON STOCK CHECK ---
+    // --- 1. FIXED: COMMON STOCK CHECK (SIZE-WISE) ---
+    // --- 1. FIXED: COMMON STOCK CHECK (SIZE-WISE) ---
     for (const item of items) {
       const product = await Product.findById(item.productId);
       
@@ -28,26 +29,46 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: `Product ${item.name} not found` }, { status: 404 });
       }
 
-      if (product.quantity < item.quantity) {
+      const selectedSize = item.size;
+      
+      // 🔥 FIXED: Convert Mongoose document tracking Map to a clean Javascript object
+      let sizeVariantsObj: Record<string, number> = {};
+      
+      if (product.sizeVariants) {
+        if (typeof product.sizeVariants.toJSON === 'function') {
+          sizeVariantsObj = product.sizeVariants.toJSON(); // Perfect Mongoose conversion helper
+        } else {
+          sizeVariantsObj = product.sizeVariants;
+        }
+      }
+
+      // Safe retrieval via pure bracket notation
+      const sizeStockAvailable = sizeVariantsObj[selectedSize] !== undefined 
+        ? Number(sizeVariantsObj[selectedSize]) 
+        : 0;
+
+      if (sizeStockAvailable < item.quantity) {
+        if (sizeStockAvailable === 0) {
+          return NextResponse.json({ 
+            error: `Sorry, Size ${selectedSize} for "${item.name}" is completely Sold Out.` 
+          }, { status: 400 });
+        }
         return NextResponse.json({ 
-          error: `Sorry, only ${product.quantity} units of ${item.name} are available.` 
+          error: `Sorry, only ${sizeStockAvailable} units of ${item.name} (Size ${selectedSize}) are available.` 
         }, { status: 400 });
       }
     }
 
     // --- CASE A: ONLINE PAYMENT INITIALIZATION (UPI) ---
     if (paymentMethod === "upi" && isOnlinePaymentInit) {
-      // Razorpay Order options configure karein
       const razorpayOptions = {
-        amount: Math.round(total * 100), // Razorpay amount Paise mein leta hai (₹1 = 100 Paise)
+        amount: Math.round(total * 100),
         currency: "INR",
         receipt: `receipt_order_${Date.now()}`,
       };
 
-      // Razorpay gateway se order create karein
       const razorpayOrder = await razorpay.orders.create(razorpayOptions);
 
-      // MongoDB mein entry create karein par status "Pending" rakhein
       const newOrder = await Order.create({
         user: userId,
         userName: address.fullName,
@@ -64,7 +85,6 @@ export async function POST(req: Request) {
         orderStatus: "Pending", 
         razorpayOrderId: razorpayOrder.id,
       });
-
 
       return NextResponse.json({ 
         success: true, 
@@ -91,11 +111,22 @@ export async function POST(req: Request) {
         orderStatus: "Processing",
       });
 
-      // Update Product Inventory (Only for COD here)
+      // 🔥 FIXED: Update Product Inventory (Global AND Particular Size Variant for COD)
       const updatePromises = items.map((item: any) => {
+        const targetProductId = item.productId || item._id;
+        const purchasedSize = item.size;
+        const purchasedQty = Number(item.quantity);
+
+        const sizeFieldPath = `sizeVariants.${purchasedSize}`;
+
         return Product.findByIdAndUpdate(
-          item.productId || item._id,
-          { $inc: { quantity: -item.quantity } }
+          targetProductId,
+          { 
+            $inc: { 
+              quantity: -purchasedQty,     
+              [sizeFieldPath]: -purchasedQty
+            } 
+          }
         );
       });
       await Promise.all(updatePromises);

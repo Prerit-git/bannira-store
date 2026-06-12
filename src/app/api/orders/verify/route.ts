@@ -23,15 +23,12 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "Payment verification failed. Genuine signature mismatch." }, { status: 400 });
     }
     
-    // Pehle check kar lein ki order sach mein exist karta hai ya nahi data extraction ke liye
     const checkOrder = await Order.findById(orderId);
     if (!checkOrder) {
         return NextResponse.json({ error: "Order context reference not found" }, { status: 404 });
     }
     const customerEmail = checkOrder.userEmail || checkOrder.shippingAddress?.email;
 
-    // 2. CRITICAL DUPLICATE FIX: .save() hatakar strict findByIdAndUpdate laga diya hai
-    // Yeh guaranteed usi single document ko modify karega, naya kabhi nahi banayega
     const updatedOrder = await Order.findByIdAndUpdate(
       orderId,
       {
@@ -48,12 +45,34 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Failed to update the order state." }, { status: 500 });
     }
 
+    // 🔥 FIXED: Loop through items and decrement global AND specific size stock for online payments
+    // 🔥 FIXED & SAFE: Loop through items and decrement global AND specific size stock for online payments
     const updatePromises = updatedOrder.items.map((item: any) => {
+      const targetProductId = item.productId;
+      const purchasedSize = item.size; // e.g., "S", "M", "L"
+      const purchasedQty = Number(item.quantity);
+
+      // Agar kisi wajah se array casting issue ho, toh string backup ensure karein
+      if (!purchasedSize) {
+        console.error(`❌ Size missing for item in order verification loop: ${item.name}`);
+        return Promise.resolve(); // Safe skip to prevent crash
+      }
+
+      // 🔥 Path targeting the dynamic size inside Mongoose Map/Object structure strictly
+      const sizeFieldPath = `sizeVariants.${purchasedSize}`;
+
       return Product.findByIdAndUpdate(
-        item.productId,
-        { $inc: { quantity: -item.quantity } }
+        targetProductId,
+        { 
+          $inc: { 
+            quantity: -purchasedQty,         // Global total quantity me se total pieces minus honge
+            [sizeFieldPath]: -purchasedQty   // Particular size database me decrement hoga (S: -2, L: -1)
+          } 
+        },
+        { new: true }
       );
     });
+    
     await Promise.all(updatePromises);
 
     // 4. Safe Email Dispatch Flow

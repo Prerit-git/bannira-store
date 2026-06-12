@@ -12,7 +12,12 @@ const ProductSchema = new Schema({
   fabric: { type: String },
   occasion: { type: String },
   work: { type: String },
-  sizes: [String],
+  sizes: [String], // Array list like ["S", "L"]
+  sizeVariants: { 
+    type: Schema.Types.Mixed, 
+    default: {}
+  },
+
   inStock: { type: Boolean, default: true },
   quantity: { type: Number, default: 0 },
   color: { type: String },

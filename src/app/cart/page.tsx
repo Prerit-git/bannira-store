@@ -236,7 +236,7 @@ export default function CartPage() {
                         </button>
                       </div>
 
-                      <div className="flex justify-between items-end mt-6">
+                      {/* <div className="flex justify-between items-end mt-6">
                         <div className="flex items-center border border-stone-200 rounded-full p-1 bg-white shadow-sm z-10">
                           <button
                             onClick={() =>
@@ -276,7 +276,50 @@ export default function CartPage() {
                           {(item.price * item.quantity).toLocaleString("en-IN")}
                         </p>
                       </div>
-                    </div>
+                    </div> */}
+
+                    {/* ─── CartPage Quantity Controls Row Block ─── */}
+<div className="flex justify-between items-end mt-6">
+  <div className="flex items-center border border-stone-200 rounded-full p-1 bg-white shadow-sm z-10">
+    <button
+      onClick={() =>
+        updateQuantity(
+          item.id,
+          item.size,
+          item.quantity - 1,
+        )
+      }
+      disabled={item.quantity <= 1}
+      className="w-8 h-8 flex items-center justify-center text-stone-400 hover:text-black disabled:opacity-20 transition-colors cursor-pointer"
+    >
+      <Minus size={14} />
+    </button>
+    <span className="px-4 text-sm font-bold font-poppins min-w-[32px] text-center">
+      {item.quantity}
+    </span>
+    <button
+      onClick={() =>
+        updateQuantity(
+          item.id,
+          item.size,
+          item.quantity + 1,
+        )
+      }
+      className="w-8 h-8 flex items-center justify-center text-stone-400 hover:text-black transition-colors cursor-pointer"
+    >
+      <Plus size={14} />
+    </button>
+  </div>
+  <div className="text-right">
+    <p className="text-[10px] text-stone-400 uppercase tracking-widest mb-1">
+      Total
+    </p>
+    <p className="text-xl font-bold text-stone-900 font-poppins tracking-tight">
+      ₹
+      {(item.price * item.quantity).toLocaleString("en-IN")}
+    </p>
+  </div>
+</div>
                   </div>
                 </motion.div>
                 );
@@ -432,7 +475,7 @@ export default function CartPage() {
               </div>
               <button
                 onClick={() => router.push("/checkout")}
-                className="w-full py-5 bg-black text-white text-[11px] font-bold uppercase tracking-[0.3em] hover:bg-[#7B2D0A] transition-all flex items-center justify-center gap-3 active:scale-[0.98] shadow-2xl shadow-black/10 rounded-2xl"
+                className="w-full py-5 bg-black text-white text-[11px] font-bold uppercase tracking-[0.3em] hover:bg-[#7B2D0A] transition-all flex items-center justify-center gap-3 active:scale-[0.98] shadow-2xl shadow-black/10 rounded-2xl cursor-pointer"
               >
                 Proceed to Checkout <ArrowRight size={16} />
               </button>

@@ -216,7 +216,7 @@ export default function CheckoutPage() {
       const res = await fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...orderPayload, isOnlinePaymentInit: true }), // Backend ko signal de rhe hain key generation ke liye
+        body: JSON.stringify({ ...orderPayload, isOnlinePaymentInit: true }),
       });
       
       const data = await res.json();

@@ -200,6 +200,36 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     });
   };
 
+  // const updateQuantity = async (id: string, size: string, newQuantity: number) => {
+  //   if (newQuantity < 1) return;
+
+  //   try {
+  //     const res = await fetch(`/api/products/${id}`);
+  //     if (!res.ok) {
+  //       const errorData = await res.json();
+  //       throw new Error(errorData.error || "Failed to fetch stock");
+  //     }
+      
+  //     const productData = await res.json();
+  //     const availableStock = productData.quantity;
+
+  //     if (newQuantity > availableStock) {
+  //       showToast(`Limit reached: Only ${availableStock} units available in stock.`);
+  //       return;
+  //     }
+
+  //     setCart((prev) =>
+  //       prev.map((item) =>
+  //         item.id === id && item.size === size
+  //           ? { ...item, quantity: newQuantity }
+  //           : item
+  //       )
+  //     );
+  //   } catch (error) {
+  //     console.error("Stock validation error:", error);
+  //   }
+  // };
+
   const updateQuantity = async (id: string, size: string, newQuantity: number) => {
     if (newQuantity < 1) return;
 
@@ -211,10 +241,13 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
       }
       
       const productData = await res.json();
-      const availableStock = productData.quantity;
+      
+      const sizeStock = productData.sizeVariants 
+        ? (productData.sizeVariants[size] || 0)
+        : 0;
 
-      if (newQuantity > availableStock) {
-        showToast(`Limit reached: Only ${availableStock} units available in stock.`);
+      if (newQuantity > sizeStock) {
+        showToast(`Limit reached: Only ${sizeStock} units available for Size ${size}.`);
         return;
       }
 
@@ -226,7 +259,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
         )
       );
     } catch (error) {
-      console.error("Stock validation error:", error);
+      console.error("Stock size validation error:", error);
     }
   };
 
