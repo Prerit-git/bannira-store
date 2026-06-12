@@ -64,7 +64,7 @@ export default function ProductDetails() {
     setMounted(true);
   }, []);
 
-  const product = useMemo(() => {
+  const product:any = useMemo(() => {
     return allProducts.find((p: any) => p.slug === id);
   }, [id, allProducts]);
 
