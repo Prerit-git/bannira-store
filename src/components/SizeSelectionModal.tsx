@@ -11,6 +11,7 @@ interface SizeModalProps {
   productName: string;
   availableSizes: string[];
   initialSize?: string;
+  sizeVariants: any;
 }
 
 export default function SizeSelectionModal({ 
@@ -19,7 +20,8 @@ export default function SizeSelectionModal({
   onConfirm, 
   productName, 
   availableSizes,
-  initialSize 
+  initialSize,
+  sizeVariants
 }: SizeModalProps) {
   // const allSizes = ["XS", "S", "M", "L", "XL", "XXL", "3XL"];
   const [tempSize, setTempSize] = useState("");
@@ -88,6 +90,9 @@ export default function SizeSelectionModal({
             {availableSizes.map((size, index) => {
               const isAvailable = availableSizes.includes(size);
               const isCurrent = size === initialSize;
+              const currentStock = sizeVariants instanceof Map
+    ? sizeVariants.get(size) || 0
+    : (sizeVariants?.[size] || 0);
               return (
                 <motion.button
                   key={size}
@@ -96,7 +101,7 @@ export default function SizeSelectionModal({
                   transition={{ delay: 0.1 + index * 0.05 }}
                   disabled={!isAvailable}
                   onClick={() => setTempSize(size)}
-                  className={`relative h-16 rounded-2xl text-sm font-bold transition-all duration-500 overflow-hidden border
+                  className={`relative h-16 flex flex-col items-center justify-center rounded-2xl text-sm font-bold transition-all duration-500 overflow-hidden border
                     ${!isAvailable 
                       ? "opacity-20 cursor-not-allowed border-stone-100 bg-stone-50 text-stone-300" 
                       : tempSize === size 
@@ -105,17 +110,25 @@ export default function SizeSelectionModal({
                     }`}
                 >
                   {tempSize === size && (
-                    <motion.div 
-                      layoutId="checkIcon"
-                      className="absolute top-1 right-1"
-                    >
-                      <Check size={12} className={isCurrent ? "text-green-400" : "text-[#D4AF37]"} />
-                    </motion.div>
-                  )}
-                  {size}
-                </motion.button>
-              );
-            })}
+        <motion.div 
+          layoutId="checkIcon"
+          className="absolute top-1 right-1"
+        >
+          <Check size={12} className={isCurrent ? "text-green-400" : "text-[#D4AF37]"} />
+        </motion.div>
+      )}
+      
+      <span className="text-xs font-black uppercase tracking-tight">{size}</span>
+      
+      {isAvailable && currentStock > 0 && currentStock <= 5 && (
+        <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wider scale-90 whitespace-nowrap mt-0.5
+          ${tempSize === size ? "text-amber-300 bg-white/10" : "text-[#7B2D0A] bg-red-50"}`}>
+          {currentStock} left
+        </span>
+      )}
+    </motion.button>
+  );
+})}
           </div>
 
           <motion.button 

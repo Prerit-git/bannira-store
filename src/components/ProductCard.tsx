@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { Heart, ShoppingBag, X, Check, ArrowRight, CheckCircle2, AlertCircle } from "lucide-react";
+import { Heart, ShoppingBag, X, Check, ArrowRight, CheckCircle2, AlertCircle, Plus } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
@@ -23,7 +23,7 @@ const getOptimizedUrl = (url: string) => {
 };
 
 const ProductCard = ({ product, onAddToCartSuccess }: ProductCardProps) => {
-  const { id, _id, name, slug, category, price, originalPrice, images, badge, sizes, quantity, inStock } = product;
+  const { id, _id, name, slug, category, price, originalPrice, images, badge, sizes, quantity, inStock, sizeVariants } = product;
   const productId = id || _id;
   const productSlug = slug;
 
@@ -43,9 +43,14 @@ const ProductCard = ({ product, onAddToCartSuccess }: ProductCardProps) => {
   const isLowStock = inStock && quantity > 0 && quantity <= 5;
   const isOutOfStock = !inStock || quantity === 0;
   const active = isLoggedIn ? isInWishlist(productId) : false;
-  const isAlreadyInCart = isLoggedIn && cart.some((item) => item.id === productId);
-  const discount = originalPrice ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0;
+  
+  const currentCartItems = isLoggedIn ? cart.filter((item) => item.id === productId) : [];
+  const isAlreadyInCart = currentCartItems.length > 0;
+  
+  // Extract explicit sizes already added to format inside the primary button label
+  const addedSizesString = currentCartItems.map(item => item.size).join(", ");
 
+  const discount = originalPrice ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0;
   const isWishlistPage = pathname === "/wishlist";
 
   useEffect(() => {
@@ -80,9 +85,15 @@ const ProductCard = ({ product, onAddToCartSuccess }: ProductCardProps) => {
       router.push("/login");
       return;
     }
-    if (!isOutOfStock && !isAlreadyInCart) {
+    if (!isOutOfStock) {
       setShowModal(true);
     }
+  };
+
+  const handleAddAnotherSizeClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setShowModal(true);
   };
 
   const onConfirmSize = (size: string) => {
@@ -144,7 +155,7 @@ const ProductCard = ({ product, onAddToCartSuccess }: ProductCardProps) => {
           </button>
         </div>
 
-        <div className="p-5 flex flex-col min-h-[180px]">
+        <div className="p-3 md:p-5 flex flex-col min-h-[180px]">
           <p className="text-[9px] tracking-[0.2em] uppercase text-stone-400 font-bold mb-1 font-poppins">{category}</p>
           <Link href={`/products/${productSlug}`}>
             <h3 className="text-sm font-serif text-[#1A1A1A] mb-2 group-hover:text-[#7B2D0A] transition-colors line-clamp-2">{name}</h3>
@@ -155,17 +166,48 @@ const ProductCard = ({ product, onAddToCartSuccess }: ProductCardProps) => {
             {originalPrice && <span className="text-xs text-stone-300 line-through">₹{originalPrice.toLocaleString("en-IN")}</span>}
           </div>
 
-          <button
-            onClick={handleCartClick}
-            disabled={isOutOfStock || isAlreadyInCart}
-            className={`w-full py-4 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2 cursor-pointer
-              ${isOutOfStock || isAlreadyInCart
-                ? "bg-stone-100 text-stone-400 cursor-not-allowed border border-stone-200"
-                : "bg-[#7B2D0A] text-white hover:bg-[#000000] active:scale-95 shadow-lg shadow-black/5"
-              }`}
-          >
-            {isOutOfStock ? "Sold Out" : isAlreadyInCart ? <span className="flex items-center gap-2 text-stone-500 italic"><Check size={14} /> Already in Bag</span> : isLoggedIn ? <><ShoppingBag size={14} /> Add to Bag</> : "Shop Now"}
-          </button>
+          <div className="w-full mt-auto">
+            {isOutOfStock ? (
+              <button
+                disabled
+                className="w-full py-4 rounded-xl text-[10px] font-bold uppercase tracking-widest bg-stone-100 text-stone-400 border border-stone-200 cursor-not-allowed"
+              >
+                Sold Out
+              </button>
+            ) : isAlreadyInCart ? (
+              <div className="flex gap-2 w-full">
+                {/* Primary split redirecting to cart detailing sizing metadata */}
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    router.push("/cart");
+                  }}
+                  className="flex-1 py-2 md:py-4 rounded-xl text-[10px] font-bold uppercase tracking-widest border border-stone-200 bg-stone-50 text-stone-600 flex items-center justify-center gap-1.5 hover:bg-stone-100 transition-all cursor-pointer"
+                >
+                  <span className="flex items-center gap-1 font-semibold italic text-stone-500">
+                    <Check size={12} className="text-green-600 hidden md:block" /> Added <br className="block md:hidden"/> ({addedSizesString})
+                  </span>
+                </button>
+                
+                {/* Secondary incremental action button triggering modal setup directly */}
+                <button
+                  onClick={handleAddAnotherSizeClick}
+                  title="Add another size"
+                  className="px-4 bg-[#7B2D0A] text-white hover:bg-black rounded-xl flex items-center justify-center transition-all active:scale-95 cursor-pointer shadow-md shadow-black/5"
+                >
+                  <Plus size={14} />
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={handleCartClick}
+                className="w-full py-4 rounded-xl text-[10px] font-bold uppercase tracking-widest bg-[#7B2D0A] text-white hover:bg-[#000000] active:scale-95 shadow-lg shadow-black/5 transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                {isLoggedIn ? <><ShoppingBag size={14} /> Add to Bag</> : "Shop Now"}
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -244,12 +286,19 @@ const ProductCard = ({ product, onAddToCartSuccess }: ProductCardProps) => {
         document.body
       )}
 
+      {/* 🔥 FIXED: Filter sizes dynamically to pass only sizes with valid stock count to modal */}
       <SizeSelectionModal
         isOpen={showModal}
         onClose={() => setShowModal(false)}
         onConfirm={onConfirmSize}
         productName={name}
-        availableSizes={sizes || []}
+        sizeVariants={sizeVariants}
+        availableSizes={(sizes || []).filter((size: string) => {
+          const currentStock = sizeVariants instanceof Map
+            ? sizeVariants.get(size) || 0
+            : (sizeVariants?.[size] || 0);
+          return currentStock > 0;
+        })}
       />
     </>
   );

@@ -135,7 +135,7 @@ export default function Navbar({ isBarVisible = true }: NavbarProps) {
             <button onClick={(e) => handleProtectedNavigation(e, "/wishlist")} className="flex flex-col items-center relative group text-white">
               <Heart size={24} className="group-hover:text-[#D4AF37] transition-colors" />
               {isLoggedIn && wishlistCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-[#D4AF37] text-black text-[10px] font-bold h-4 w-4 flex items-center justify-center rounded-full shadow-md">{wishlistCount}</span>
+                <span className="absolute -top-2 right-1 bg-[#D4AF37] text-black text-[10px] font-bold h-4 w-4 flex items-center justify-center rounded-full shadow-md">{wishlistCount}</span>
               )}
               <span className="text-[10px] uppercase tracking-widest mt-1">Wishlist</span>
             </button>
@@ -154,7 +154,7 @@ export default function Navbar({ isBarVisible = true }: NavbarProps) {
             <button onClick={(e) => handleProtectedNavigation(e, "/wishlist")} className="flex flex-col items-center relative group text-white p-2">
               <Heart size={24} />
               {isLoggedIn && wishlistCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-[#D4AF37] text-black text-[10px] font-bold h-3.5 w-3.5 flex items-center justify-center rounded-full shadow-md">{wishlistCount}</span>
+                <span className="absolute top-1 right-0 bg-[#D4AF37] text-black text-[10px] font-bold h-3.5 w-3.5 flex items-center justify-center rounded-full shadow-md">{wishlistCount}</span>
               )}
             </button>
             <button onClick={(e) => handleProtectedNavigation(e, "/cart")} className="relative p-2 text-white">

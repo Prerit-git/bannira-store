@@ -22,6 +22,7 @@ export interface IOrder extends Document {
     pincode: string;
     state: string;
     addressType: string;
+    gstNumber: string;
   };
   subtotal: number;
   shippingCharge: number;
@@ -67,6 +68,7 @@ const OrderSchema = new Schema<IOrder>(
       pincode: { type: String, required: true },
       state: { type: String, required: true },
       addressType: { type: String, default: "home" },
+      gstNumber:{ type: String, default: ""}
     },
     subtotal: { type: Number, required: true },
     shippingCharge: { type: Number, default: 0 },

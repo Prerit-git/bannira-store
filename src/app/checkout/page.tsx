@@ -17,11 +17,21 @@ import {
   Briefcase,
   CreditCard,
   Wallet,
-  Banknote,
   Plus,
   History,
   CheckCircle2,
 } from "lucide-react";
+
+// List of Indian States for the clean dropdown layout matrix
+const INDIAN_STATES = [
+  "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh", 
+  "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand", "Karnataka", 
+  "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur", "Meghalaya", "Mizoram", 
+  "Nagaland", "Odisha", "Punjab", "Rajasthan", "Sikkim", "Tamil Nadu", 
+  "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal",
+  "Andaman and Nicobar Islands", "Chandigarh", "Dadra and Nagar Haveli and Daman and Diu", 
+  "Delhi", "Jammu and Kashmir", "Ladakh", "Lakshadweep", "Puducherry"
+];
 
 export default function CheckoutPage() {
   const { cart, totalPrice, discount, clearCart } = useCart();
@@ -54,6 +64,7 @@ export default function CheckoutPage() {
     state: "",
     pincode: "",
     addressType: "home",
+    gstNumber: "",
   });
 
   useEffect(() => {
@@ -66,7 +77,10 @@ export default function CheckoutPage() {
             const prevAddr = data.orders[0].shippingAddress;
             setLastAddress(prevAddr);
             setUsePreviousAddress(true);
-            setFormData(prevAddr);
+            setFormData({
+              ...prevAddr,
+              gstNumber: prevAddr.gstNumber || "",
+            });
           } else {
             setUsePreviousAddress(false);
             setFormData((prev) => ({
@@ -123,50 +137,71 @@ export default function CheckoutPage() {
   const tax = Math.round(subtotal * (gstPercentage / 100));
   const finalTotal = subtotal + shipping + tax - discount;
 
-  const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
+    
+    // Numbers tracking restrictions constraints mapping helper
     if (name === "phone") {
       const val = value.replace(/\D/g, "").slice(0, 10);
       setFormData((prev) => ({ ...prev, phone: val }));
       return;
     }
+
+    // 🔥 FIXED: Strict 6 digits numeric validation check for pincode structure mapping
+    if (name === "pincode") {
+      const numericVal = value.replace(/\D/g, "").slice(0, 6);
+      setFormData((prev) => ({ ...prev, pincode: numericVal }));
+
+      // Trigger automatic verification block strictly upon complete length registry
+      if (numericVal.length === 6) {
+        setIsPincodeLoading(true);
+        try {
+          const res = await fetch(
+            `https://api.postalpincode.in/pincode/${numericVal.trim()}`
+          );
+          
+          if (!res.ok) throw new Error("Network response was not ok");
+          const data = await res.json();
+          
+          if (data && data[0] && data[0].Status === "Success" && data[0].PostOffice?.[0]) {
+            const apiState = data[0].PostOffice[0].State;
+            // Match extracted strings seamlessly with list indices map context
+            const matchedState = INDIAN_STATES.find(
+              (s) => s.toLowerCase() === apiState.toLowerCase()
+            ) || apiState;
+
+            setFormData((prev) => ({
+              ...prev,
+              state: matchedState,
+            }));
+          } else {
+            console.warn("Pincode API returned empty or unsuccessful status");
+          }
+        } catch (e) {
+          console.error("Pincode Fetch Error:", e);
+          showToast("Something went wrong. Please select state manually.");
+        } finally {
+          setIsPincodeLoading(false);
+        }
+      }
+      return;
+    }
     
     setFormData((prev) => ({ ...prev, [name]: value }));
-
-    // Pincode strict verification block
-    if (name === "pincode" && value.length === 6) {
-      setIsPincodeLoading(true);
-      try {
-        const res = await fetch(
-          `https://api.postalpincode.in/pincode/${value.trim()}`
-        );
-        
-        if (!res.ok) throw new Error("Network response was not ok");
-
-        const data = await res.json();
-        
-        if (data && data[0] && data[0].Status === "Success" && data[0].PostOffice?.[0]) {
-          setFormData((prev) => ({
-            ...prev,
-            state: data[0].PostOffice[0].State,
-          }));
-        } else {
-          console.warn("Pincode API returned empty or unsuccessful status");
-        }
-      } catch (e) {
-        console.error("Pincode Fetch Error:", e);
-        showToast("Something went wrong. Please enter state manually.");
-      } finally {
-        setIsPincodeLoading(false);
-      }
-    }
   };
 
   // 2. MODIFIED ORDER & PAYMENT GATEWAY FLOW
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.fullName || formData.phone.length < 10 || !formData.address) {
+    
+    // Core field validation checkers
+    if (!formData.fullName || formData.phone.length < 10 || !formData.address || !formData.pincode || !formData.state) {
       showToast("Please check all required fields.");
+      return;
+    }
+
+    if (formData.pincode.length !== 6) {
+      showToast("Pincode must be exactly 6 digits long.");
       return;
     }
     
@@ -212,7 +247,6 @@ export default function CheckoutPage() {
       }
 
       // --- CASE B: ONLINE PAYMENT (RAZORPAY) ---
-      // Pehle backend se secure transaction id / order verify karwayein
       const res = await fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -222,7 +256,6 @@ export default function CheckoutPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Order generation failed");
 
-      // Razorpay implementation setup parameters
       const options = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
         amount: data.razorpayOrder.amount,
@@ -232,40 +265,40 @@ export default function CheckoutPage() {
         image: "/bannira_web_logo2.png",
         order_id: data.razorpayOrder.id, 
         handler: async function (response: any) {
-  try {
-    const verifyRes = await fetch("/api/orders/verify", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        orderId: data.order._id,
-        razorpay_payment_id: response.razorpay_payment_id,
-        razorpay_order_id: response.razorpay_order_id,
-        razorpay_signature: response.razorpay_signature,
-      }),
-    });
+          try {
+            const verifyRes = await fetch("/api/orders/verify", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                orderId: data.order._id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_signature: response.razorpay_signature,
+              }),
+            });
 
-    const verifyData = await verifyRes.json();
-    if (!verifyRes.ok) throw new Error(verifyData.error || "Verification failed");
+            const verifyData = await verifyRes.json();
+            if (!verifyRes.ok) throw new Error(verifyData.error || "Verification failed");
 
-    sessionStorage.setItem("lastOrder", JSON.stringify(verifyData.order));
-    if (clearCart) clearCart();
-    router.push("/order-success");
-  } catch (verifyErr: any) {
-    showToast(verifyErr.message || "Payment authentication failed");
-    setIsPlacingOrder(false);
-  }
-},
+            sessionStorage.setItem("lastOrder", JSON.stringify(verifyData.order));
+            if (clearCart) clearCart();
+            router.push("/order-success");
+          } catch (verifyErr: any) {
+            showToast(verifyErr.message || "Payment authentication failed");
+            setIsPlacingOrder(false);
+          }
+        },
         prefill: {
           name: formData.fullName,
           email: formData.email,
           contact: formData.phone,
         },
         theme: {
-          color: "#7B2D0A", // Custom core brand identity theme injection
+          color: "#7B2D0A",
         },
         modal: {
           ondismiss: function () {
-            setIsPlacingOrder(false); // Modal cancel hone par loader close karein
+            setIsPlacingOrder(false);
           },
         },
       };
@@ -288,7 +321,6 @@ export default function CheckoutPage() {
 
   return (
     <div className="min-h-screen bg-[#FAF9F6] pb-32 pt-32 md:pt-40">
-      {/* Script component explicitly fetching runtime dependencies code libraries */}
       <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
 
       <AnimatePresence>
@@ -359,6 +391,11 @@ export default function CheckoutPage() {
                       {lastAddress.address}, {lastAddress.area},{" "}
                       {lastAddress.state} - {lastAddress.pincode}
                     </p>
+                    {lastAddress.gstNumber && (
+                      <p className="text-[10px] font-mono text-[#D4AF37] mt-1 uppercase font-bold">
+                        GSTIN: {lastAddress.gstNumber}
+                      </p>
+                    )}
                   </button>
                   <button
                     type="button"
@@ -403,7 +440,7 @@ export default function CheckoutPage() {
                     </div>
                     <div className="md:col-span-2">
                       <InputField
-                        label="House/Building Name *"
+                        label="Shipping Address *"
                         name="address"
                         value={formData.address}
                         onChange={handleInputChange}
@@ -422,13 +459,41 @@ export default function CheckoutPage() {
                       onChange={handleInputChange}
                       maxLength={6}
                     />
-                    <InputField
-                      label={isPincodeLoading ? "..." : "State *"}
-                      name="state"
-                      value={formData.state}
-                      onChange={handleInputChange}
-                    />
+
+                    {/* 🔥 FIXED: Replaced standard text InputField with a luxury custom select dropdown element */}
+                    <div className="relative group border-b border-stone-200 py-1 focus-within:border-[#7B2D0A] transition-all">
+                      <label className="absolute left-0 -top-4 text-[10px] font-bold uppercase tracking-widest text-stone-400 transition-all pointer-events-none peer-focus:text-[#7B2D0A]">
+                        {isPincodeLoading ? "Locating Matrix..." : "State *"}
+                      </label>
+                      <select
+                        name="state"
+                        value={formData.state}
+                        onChange={handleInputChange}
+                        className="w-full bg-transparent outline-none text-sm font-medium py-2 pr-8 appearance-none cursor-pointer text-stone-900"
+                      >
+                        <option value="" disabled className="text-stone-300">
+                          Select your Region / Union Territory
+                        </option>
+                        {INDIAN_STATES.map((state) => (
+                          <option key={state} value={state} className="text-stone-800 bg-white">
+                            {state}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown size={14} className="absolute right-0 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none group-hover:text-stone-600 transition-colors" />
+                    </div>
+
+                    <div className="md:col-span-2 pt-2">
+                      <InputField
+                        label="GSTIN Number (Optional)"
+                        name="gstNumber"
+                        value={formData.gstNumber}
+                        onChange={handleInputChange}
+                        maxLength={15}
+                      />
+                    </div>
                   </div>
+                  
                   <div className="flex gap-4">
                     <TypeBadge
                       active={formData.addressType === "home"}
@@ -459,16 +524,9 @@ export default function CheckoutPage() {
               <div className="space-y-4">
                 <PaymentOption
                   id="upi"
-                  label="UPI / Digital Wallet"
+                  label="UPI / Credit Card / Debit Card / Net Banking and more"
                   icon={<Wallet size={18} />}
                   active={paymentMethod === "upi"}
-                  onClick={setPaymentMethod}
-                />
-                <PaymentOption
-                  id="cod"
-                  label="Cash on Delivery"
-                  icon={<Banknote size={18} />}
-                  active={paymentMethod === "cod"}
                   onClick={setPaymentMethod}
                 />
               </div>

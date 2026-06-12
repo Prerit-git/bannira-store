@@ -20,8 +20,6 @@ export async function POST(req: Request) {
       tax, discount, total, paymentMethod, isOnlinePaymentInit 
     } = body;
 
-    // --- 1. FIXED: COMMON STOCK CHECK (SIZE-WISE) ---
-    // --- 1. FIXED: COMMON STOCK CHECK (SIZE-WISE) ---
     for (const item of items) {
       const product = await Product.findById(item.productId);
       
@@ -31,18 +29,16 @@ export async function POST(req: Request) {
 
       const selectedSize = item.size;
       
-      // 🔥 FIXED: Convert Mongoose document tracking Map to a clean Javascript object
       let sizeVariantsObj: Record<string, number> = {};
       
       if (product.sizeVariants) {
         if (typeof product.sizeVariants.toJSON === 'function') {
-          sizeVariantsObj = product.sizeVariants.toJSON(); // Perfect Mongoose conversion helper
+          sizeVariantsObj = product.sizeVariants.toJSON();
         } else {
           sizeVariantsObj = product.sizeVariants;
         }
       }
 
-      // Safe retrieval via pure bracket notation
       const sizeStockAvailable = sizeVariantsObj[selectedSize] !== undefined 
         ? Number(sizeVariantsObj[selectedSize]) 
         : 0;
@@ -59,7 +55,6 @@ export async function POST(req: Request) {
       }
     }
 
-    // --- CASE A: ONLINE PAYMENT INITIALIZATION (UPI) ---
     if (paymentMethod === "upi" && isOnlinePaymentInit) {
       const razorpayOptions = {
         amount: Math.round(total * 100),
@@ -111,7 +106,6 @@ export async function POST(req: Request) {
         orderStatus: "Processing",
       });
 
-      // 🔥 FIXED: Update Product Inventory (Global AND Particular Size Variant for COD)
       const updatePromises = items.map((item: any) => {
         const targetProductId = item.productId || item._id;
         const purchasedSize = item.size;
@@ -131,7 +125,6 @@ export async function POST(req: Request) {
       });
       await Promise.all(updatePromises);
 
-      // Send Confirmation Email immediately for COD
       try {
         await sendOrderEmail(address.email, {
           orderId: newOrder._id,

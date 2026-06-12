@@ -708,7 +708,7 @@ export default function ProductDetails() {
   onClose={() => setShowModal(false)}
   onConfirm={confirmAddToCart}
   productName={product.name}
-  
+  sizeVariants={(product as any).sizeVariants}
   availableSizes={product.sizes?.filter((size: string) => {
     const rawProduct = product as any;
     const currentStock = rawProduct.sizeVariants instanceof Map 
