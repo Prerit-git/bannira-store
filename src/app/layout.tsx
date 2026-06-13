@@ -12,6 +12,7 @@ import LayoutWrapper from "@/components/LayoutWrapper";
 // import { ProductProvider } from "@/context/ProductContext";
 // import { SessionProvider } from "next-auth/react";
 import Providers from "@/components/Providers";
+import BulkCTA from "@/components/BulkCTA";
 
 const libre = Libre_Baskerville({
   subsets: ["latin"],
@@ -44,6 +45,7 @@ export default function RootLayout({
           <LayoutWrapper>
             {children}
           </LayoutWrapper>
+          <BulkCTA />
           <Footer />
         </Providers>
       </body>
