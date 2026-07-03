@@ -88,7 +88,7 @@ export default function Navbar({ isBarVisible = true }: NavbarProps) {
 
   return (
     <>
-      <header className={`fixed ${topSpacing} left-0 w-full z-50 transition-all duration-500 ${navbarBg}`}>
+      <header className={`fixed ${topSpacing} left-0 w-full z-50 transition-all duration-500 bg-[#7B2D0A]`}>
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
           <Link href={"/"} className={`transition-all duration-500 ${scrolled ? "scale-75" : "scale-75"}`}>
             <Image src={"/bannira_web_logo2.png"} alt="logo" width={180} height={80} priority className="object-cover w-auto h-auto -ml-2 md:ml-0" />

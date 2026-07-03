@@ -57,7 +57,7 @@ const ProductsSection = () => {
           </p>
 
           <h2 className="text-4xl md:text-6xl font-semibold text-[#7B2D0A] mb-6 leading-tight">
-            Featured Collection
+            New Arrivals
           </h2>
 
           <div className="flex items-center justify-center gap-4">
