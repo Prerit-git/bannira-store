@@ -18,6 +18,7 @@ export interface ICoupon extends Document {
   usedCount: number;
   isActive: boolean;
   createdAt: Date;
+  isNewUserOnly: boolean;
 }
 
 export interface IUISetting extends Document {

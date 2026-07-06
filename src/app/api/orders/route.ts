@@ -152,3 +152,23 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+
+export async function GET(req: Request) {
+  try {
+    await connectDB();
+    
+    const { searchParams } = new URL(req.url);
+    const userId = searchParams.get("userId");
+
+    if (!userId) {
+      return NextResponse.json({ error: "User ID is required" }, { status: 400 });
+    }
+
+    const userOrders = await Order.find({ user: userId }).sort({ createdAt: -1 });
+
+    return NextResponse.json(userOrders, { status: 200 });
+  } catch (error: any) {
+    console.error("Fetch User Orders Error:", error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}

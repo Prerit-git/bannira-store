@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useCart } from "@/context/CartContext";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAuth } from "@/context/AuthContext";
 import {
   Minus,
   Plus,
@@ -18,6 +19,7 @@ import {
   AlertCircle,
   Sparkles,
   XCircle,
+  Lock,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -30,6 +32,7 @@ interface Coupon {
   startDate: any;
   endDate?: string | null;
   isActive: boolean;
+  isNewUserOnly: boolean;
 }
 
 export default function CartPage() {
@@ -45,6 +48,7 @@ export default function CartPage() {
   } = useCart();
 
   const router = useRouter();
+  const { user, isLoggedIn } = useAuth();
   const [couponInput, setCouponInput] = useState("");
   const [showProgress, setShowProgress] = useState(true);
   const [deleteTarget, setDeleteTarget] = useState<{
@@ -65,10 +69,37 @@ export default function CartPage() {
   // States for DB Coupons
   const [availableCoupons, setAvailableCoupons] = useState<Coupon[]>([]);
 
+  const [hasPreviousOrders, setHasPreviousOrders] = useState(false);
+
   useEffect(() => {
     setMounted(true);
     fetchSettingsAndCoupons();
   }, []);
+
+  useEffect(() => {
+    if (isLoggedIn && user) {
+      checkUserOrderHistory();
+    }
+  }, [isLoggedIn, user]);
+
+  const checkUserOrderHistory = async () => {
+    const dbUserId = user?.id || user?._id;
+    if (!dbUserId) return;
+    try {
+      // Direct pipeline target hit to live orders registry
+      const res = await fetch(`/api/orders?userId=${dbUserId}`);
+      if (res.ok) {
+        const data = await res.json();
+        const ordersList = Array.isArray(data) ? data : data.orders || [];
+        // If user already possesses previous completed records, validate flag as TRUE
+        if (ordersList.length > 0) {
+          setHasPreviousOrders(true);
+        }
+      }
+    } catch (e) {
+      console.error("Error evaluating user order history mapping context", e);
+    }
+  };
 
   const fetchSettingsAndCoupons = async () => {
     try {
@@ -103,6 +134,11 @@ export default function CartPage() {
 
   const handleApplyCoupon = (e: React.FormEvent) => {
     e.preventDefault();
+    const targetCoupon = availableCoupons.find(c => c.code.toUpperCase() === couponInput.toUpperCase());
+    if (targetCoupon?.isNewUserOnly && hasPreviousOrders) {
+      alert("⚠️ This coupon code is valid on your 1st purchase only.");
+      return;
+    }
     const success = applyCoupon(couponInput);
     if (success) {
       setCouponStatus("success");
@@ -344,44 +380,58 @@ export default function CartPage() {
                   <div className="flex flex-col gap-2 max-h-[140px] overflow-y-auto pr-1">
                     {availableCoupons.map((coupon, idx) => {
                       const isSelected = appliedCoupon === coupon.code;
+                      const isRestrictedOldUser = coupon.isNewUserOnly && hasPreviousOrders;
+                      const disableButtonTrigger = isSelected || isRestrictedOldUser;
                       return (
-                        <button
-                          key={idx}
-                          disabled={isSelected}
-                          onClick={() =>
-                            handleSelectCoupon(
-                              coupon.code,
-                              coupon.minOrderValue || 0,
-                            )
-                          }
-                          className={`flex justify-between items-center p-3 border rounded-xl transition-all text-left group ${
-                            isSelected
-                              ? "bg-stone-100 border-stone-200 opacity-60 cursor-not-allowed"
-                              : "border-stone-100 hover:bg-stone-50 cursor-pointer"
-                          }`}
-                        >
-                          <div>
-                            <p className="text-[10px] font-bold text-[#7B2D0A] uppercase">
-                              {coupon.code}
-                            </p>
-                            <p className="text-[9px] text-stone-400">
-                              Save {coupon.discountValue}
-                              {coupon.discountType === "percentage"
-                                ? "%"
-                                : "₹"}{" "}
-                              (Min. order: ₹{coupon.minOrderValue || 0})
-                            </p>
-                          </div>
-                          <span
-                            className={`text-[9px] font-bold px-2 py-1 rounded ${
+                        <div key={idx} className="flex flex-col relative group/coupon">
+                          
+                          {isRestrictedOldUser && (
+                            <div className="text-[8px] font-black tracking-widest uppercase text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-sm mb-1 self-start border border-amber-100">
+                              Valid on 1st purchase only
+                            </div>
+                          )}
+
+                          <button
+                            disabled={disableButtonTrigger}
+                            onClick={() =>
+                              handleSelectCoupon(
+                                coupon.code,
+                                coupon.minOrderValue || 0,
+                              )
+                            }
+                            className={`flex justify-between items-center p-3 border rounded-xl transition-all text-left w-full ${
                               isSelected
-                                ? "bg-stone-300 text-stone-600"
-                                : "bg-stone-200 text-stone-900 group-hover:bg-black group-hover:text-white"
+                                ? "bg-stone-100 border-stone-200 opacity-60 cursor-not-allowed"
+                                : isRestrictedOldUser
+                                ? "border-stone-100 bg-stone-50/50 opacity-50 cursor-not-allowed"
+                                : "border-stone-100 hover:bg-stone-50 cursor-pointer"
                             }`}
                           >
-                            {isSelected ? "Applied" : "Select"}
-                          </span>
-                        </button>
+                            <div className="min-w-0 flex-1 pr-2">
+                              <p className="text-[10px] font-bold text-[#7B2D0A] uppercase flex items-center gap-1.5">
+                                {coupon.code} {isRestrictedOldUser && <Lock size={10} className="text-stone-400" />}
+                              </p>
+                              <p className="text-[9px] text-stone-400 truncate">
+                                Save {coupon.discountValue}
+                                {coupon.discountType === "percentage"
+                                  ? "%"
+                                  : "₹"}{" "}
+                                (Min. order: ₹{coupon.minOrderValue || 0})
+                              </p>
+                            </div>
+                            <span
+                              className={`text-[9px] font-bold px-2 py-1 rounded shrink-0 ${
+                                isSelected
+                                  ? "bg-stone-300 text-stone-600"
+                                  : isRestrictedOldUser
+                                  ? "bg-stone-100 text-stone-400"
+                                  : "bg-stone-200 text-stone-900 group-hover/coupon:bg-black group-hover/coupon:text-white"
+                              }`}
+                            >
+                              {isSelected ? "Applied" : isRestrictedOldUser ? "Select" : "Select"}
+                            </span>
+                          </button>
+                        </div>
                       );
                     })}
                   </div>
